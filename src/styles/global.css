@@ -1,0 +1,1072 @@
+:root {
+  --bg: #f6f4ef;
+  --surface: #fffdf8;
+  --surface-2: #eef4f1;
+  --ink: #172326;
+  --muted: #64706f;
+  --line: #d6ddd8;
+  --primary: #0d5f57;
+  --primary-dark: #084640;
+  --accent: #246f8f;
+  --warning: #c47a17;
+  --danger: #b94b4b;
+  --danger-dark: #823535;
+  --success: #28724f;
+  --shadow: 0 14px 28px rgba(20, 37, 38, 0.08);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--bg);
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.55; }
+
+input, textarea, select {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 0.8rem 0.9rem;
+  outline: none;
+}
+
+textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+label {
+  display: grid;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
+h1, h2, h3, h4, p {
+  margin-top: 0;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.button {
+  border: 0;
+  border-radius: 10px;
+  padding: 0.72rem 1rem;
+  font-weight: 800;
+  transition: transform 150ms ease, background 150ms ease, border-color 150ms ease;
+}
+
+.button:hover { transform: translateY(-1px); }
+.button:active { transform: translateY(1px); }
+.button.large { padding: 0.95rem 1.15rem; font-size: 1rem; }
+.button.primary { background: var(--primary); color: #fff; }
+.button.primary:hover { background: var(--primary-dark); }
+.button.secondary { background: #e4eee9; color: var(--primary-dark); border: 1px solid #bdd0c8; }
+.button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+.compact-button { padding: 0.55rem 0.7rem; }
+
+.button-row {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.button-row > * { flex: 1; }
+.button-row.tight > * { flex: 0; }
+
+.eyebrow {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.badge, .room-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: #e5efeb;
+  color: var(--primary-dark);
+  font-weight: 800;
+  font-size: 0.82rem;
+  border: 1px solid #c5d7d0;
+}
+
+.badge.combo { background: #fff1d7; color: #7a4a09; border-color: #eac67f; }
+.badge.charges { background: #e7f0f7; color: #164e69; border-color: #bfd2df; }
+
+.landing {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: 2rem;
+}
+
+.landing-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.78fr);
+  gap: 2rem;
+  align-items: center;
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.hero-copy h1 {
+  max-width: 760px;
+  margin: 0.55rem 0 1rem;
+  font-size: clamp(2.2rem, 5vw, 5.4rem);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.hero-copy p {
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 1.12rem;
+  line-height: 1.65;
+}
+
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin: 1.6rem 0;
+}
+
+.room-code-field {
+  max-width: 220px;
+}
+
+.system-line {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.status-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: #aeb8b4;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.status-dot.online { background: var(--success); }
+
+.mission-panel, .join-card, .setup-card, .student-card, .control-card, .panel-card, .metric-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.mission-panel {
+  padding: 1.25rem;
+}
+
+.patient-map {
+  height: 390px;
+  border-radius: 16px;
+  background: #e8f0ed;
+  border: 1px solid #cfddd7;
+  position: relative;
+  overflow: hidden;
+}
+
+.organ-outline {
+  position: absolute;
+  inset: 12%;
+  border: 3px solid #8db7aa;
+  border-radius: 46% 54% 38% 62%;
+  background: #f8fbf9;
+}
+
+.cell, .tcell {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.cell {
+  background: #d86565;
+  border: 4px solid #9e3f3f;
+  animation: pulseCell 2.8s ease-in-out infinite;
+}
+
+.cell.c1 { width: 82px; height: 82px; left: 45%; top: 38%; }
+.cell.c2 { width: 45px; height: 45px; left: 34%; top: 30%; animation-delay: 0.3s; }
+.cell.c3 { width: 52px; height: 52px; left: 60%; top: 54%; animation-delay: 0.8s; }
+.tcell { width: 36px; height: 36px; background: #4f9a86; border: 4px solid #24695a; }
+.tcell.t1 { left: 20%; top: 52%; }
+.beam-line { position: absolute; left: 5%; top: 25%; width: 62%; height: 5px; background: var(--accent); transform: rotate(18deg); transform-origin: left; }
+
+.mission-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.mission-stats div, .metric-card {
+  padding: 1rem;
+}
+
+.mission-stats strong, .metric-card strong {
+  display: block;
+  font-size: 1.8rem;
+}
+
+.mission-stats span, .metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.app-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--muted);
+  padding: 1rem;
+  font-size: 0.85rem;
+}
+
+.dev-link {
+  border: 0;
+  background: transparent;
+  color: #8b9692;
+  font-size: 0.75rem;
+}
+
+.join-screen, .presenter-setup, .student-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.join-card, .setup-card, .student-card {
+  width: min(520px, 100%);
+  padding: 1.4rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.join-card h1, .setup-card h1, .student-card h1 {
+  margin-bottom: 0;
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  line-height: 1;
+}
+
+.back-button { width: max-content; }
+
+.presenter-dashboard {
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.dashboard-header, .student-header, .dev-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-header h1, .student-header h1, .dev-header h2 {
+  margin: 0.25rem 0 0;
+}
+
+.header-actions, .dev-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) 290px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.control-rail, .analytics-rail {
+  display: grid;
+  gap: 1rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.control-card, .panel-card {
+  padding: 1rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.control-card h3, .panel-card h3 {
+  margin-bottom: 0;
+}
+
+.main-stage {
+  display: grid;
+  gap: 1rem;
+}
+
+.lesson-viewer {
+  min-height: 540px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 1.35rem;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(360px, 1.15fr);
+  gap: 1rem;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.lesson-viewer.compact {
+  min-height: auto;
+  grid-template-columns: 1fr;
+}
+
+.slide-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.slide-kicker {
+  color: var(--primary);
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.slide-copy h2 {
+  font-size: clamp(2rem, 4vw, 4rem);
+  line-height: 1;
+  margin: 0.55rem 0 1rem;
+}
+
+.slide-copy p {
+  color: var(--muted);
+  line-height: 1.65;
+  font-size: 1.08rem;
+}
+
+.overlay-animation {
+  display: grid;
+  place-items: center;
+  min-height: 360px;
+  background: #eef4f1;
+  border: 1px solid #d2dfd9;
+  border-radius: 18px;
+}
+
+.overlay-animation svg {
+  width: min(100%, 720px);
+}
+
+.diagram-bg, .patient-zone {
+  fill: #f8fbf9;
+  stroke: #cddbd5;
+  stroke-width: 2;
+}
+
+.cancer-cell {
+  fill: #d86565;
+  stroke: #943939;
+  stroke-width: 4;
+  animation: pulseCell 2.5s ease-in-out infinite;
+}
+
+.cancer-cell.small { animation-delay: 0.35s; }
+.dna, .crack { fill: none; stroke: #7b3030; stroke-width: 4; stroke-linecap: round; }
+
+.mutation-warning, .surgery-tool, .chemo-flow, .radiation-beam, .immune, .pdt, .research {
+  opacity: 0.05;
+  transition: opacity 180ms ease;
+}
+
+.anim-mutation .mutation-warning,
+.anim-surgery .surgery-tool,
+.anim-chemotherapy .chemo-flow,
+.anim-radiation .radiation-beam,
+.anim-immunotherapy .immune,
+.anim-cart .immune,
+.anim-pdt .pdt,
+.anim-research .research,
+.anim-combination .chemo-flow,
+.anim-combination .immune,
+.anim-game .radiation-beam {
+  opacity: 1;
+}
+
+.mutation-warning path, .mutation-tag path { fill: #fff1d7; stroke: var(--warning); stroke-width: 2; }
+.mutation-warning text, .mutation-tag text { fill: #704209; font-weight: 900; font-size: 17px; }
+.surgery-tool path { stroke: var(--primary-dark); stroke-width: 6; fill: #dfe8e4; stroke-linecap: round; }
+.surgery-tool rect { fill: rgba(255,255,255,0.62); stroke: var(--primary); stroke-width: 3; animation: removeTumor 2.2s ease-in-out infinite; }
+.vessel { fill: none; stroke: #8bb0b8; stroke-width: 12; stroke-linecap: round; }
+.drug { fill: var(--accent); animation: flowDrug 2.6s linear infinite; }
+.side-meter { fill: #f4d0c7; }
+.side-fill { fill: #d88d7f; animation: meterPulse 2.4s ease-in-out infinite; }
+.beam { stroke: var(--accent); stroke-width: 5; stroke-linecap: round; marker-end: url(#arrow); animation: beamSweep 1.8s ease-in-out infinite; }
+.crack { animation: crackFlicker 1.4s steps(2) infinite; }
+.tcell, .team-cells circle { fill: #4f9a86; stroke: #24695a; stroke-width: 4; }
+.target-line, .team-cells path { stroke: var(--primary); stroke-width: 3; stroke-dasharray: 8 8; animation: dash 1s linear infinite; }
+.shield { fill: #d7e2de; stroke: #789a91; stroke-width: 3; animation: shieldDrop 2.4s ease-in-out infinite; }
+.light { fill: #f7d77b; opacity: 0.75; animation: lightFlash 2s ease-in-out infinite; }
+.photo { fill: #246f8f; }
+.radical { fill: #c47a17; animation: radicalFade 1.5s ease-in-out infinite; }
+.research path { fill: none; stroke: var(--primary); stroke-width: 5; stroke-linecap: round; }
+.research circle { fill: var(--accent); animation: pulseCell 1.8s ease-in-out infinite; }
+
+.question-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.9rem;
+  box-shadow: var(--shadow);
+}
+
+.question-card h3 {
+  font-size: clamp(1.35rem, 2.5vw, 2.1rem);
+  line-height: 1.15;
+  margin: 0;
+}
+
+.question-meta, .health-row, .treatment-title-row, .editor-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.choice-grid {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.choice-button {
+  min-height: 60px;
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 13px;
+  padding: 0.8rem;
+  text-align: left;
+  font-weight: 800;
+}
+
+.choice-button.selected { border-color: var(--accent); background: #edf6f8; }
+.choice-button.correct { border-color: var(--success); background: #e8f3ee; }
+.choice-button.incorrect { border-color: var(--danger); background: #f8eaea; }
+.choice-letter {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8efec;
+  color: var(--primary-dark);
+}
+
+.answer-explanation {
+  border-left: 4px solid var(--primary);
+  background: #eef4f1;
+  padding: 0.85rem;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.short-answer {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.response-strip, .muted {
+  color: var(--muted);
+}
+
+.metric-stack {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+}
+
+.student-row, .response-row, .concept-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.55rem;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  padding: 0.65rem 0;
+}
+
+.response-row, .concept-row {
+  grid-template-columns: 1fr auto;
+}
+
+.correct-text { color: var(--success); }
+.incorrect-text { color: var(--danger-dark); }
+
+.concept-meter {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.concept-meter div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+
+meter {
+  width: 100%;
+  height: 0.65rem;
+}
+
+.game-ready {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  box-shadow: var(--shadow);
+}
+
+.game-arena {
+  display: grid;
+  gap: 1rem;
+}
+
+.game-topbar {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto auto auto auto;
+  gap: 0.7rem;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 0.9rem;
+}
+
+.health-bar {
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #ead9d7;
+  border: 1px solid #d9bbb7;
+}
+
+.health-bar span {
+  display: block;
+  height: 100%;
+  background: var(--danger);
+  transition: width 350ms ease;
+}
+
+.mutation-alert {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  background: #fff1d7;
+  border: 1px solid #eac67f;
+  color: #704209;
+  border-radius: 14px;
+  padding: 0.8rem 1rem;
+}
+
+.game-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 1rem;
+}
+
+.battlefield-panel, .resource-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.battlefield-header, .panel-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.battlefield-header p, .panel-heading p {
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.battlefield {
+  background: #eef4f1;
+  border: 1px solid #d4e0db;
+  border-radius: 16px;
+}
+
+.battlefield svg { width: 100%; display: block; }
+.vessel-path { fill: none; stroke: #8bb0b8; stroke-width: 14; stroke-linecap: round; opacity: 0.7; }
+.boss circle { fill: #d86565; stroke: #943939; stroke-width: 5; animation: pulseCell 2.5s ease-in-out infinite; }
+.boss path { fill: none; stroke: #7b3030; stroke-width: 5; stroke-linecap: round; }
+.boss.mutated circle { stroke: var(--warning); stroke-dasharray: 8 5; }
+
+.attack-log {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+  color: var(--muted);
+}
+
+.log-entry {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 0.65rem;
+  align-items: start;
+  background: #fbfaf6;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.65rem;
+}
+
+.log-entry strong { color: var(--danger-dark); }
+
+.treatment-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.treatment-card {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  background: #fbfaf6;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.7rem;
+}
+
+.treatment-card h4 { margin-bottom: 0.25rem; }
+.treatment-card p { margin-bottom: 0.2rem; color: var(--ink); font-size: 0.88rem; line-height: 1.35; }
+.treatment-card small { color: var(--muted); line-height: 1.35; }
+.damage-badge { color: var(--danger-dark); font-weight: 900; white-space: nowrap; }
+
+.treatment-icon {
+  width: 48px;
+  height: 48px;
+  background: #e8efec;
+  border: 1px solid #c5d7d0;
+  border-radius: 13px;
+  padding: 8px;
+}
+
+.treatment-icon path, .treatment-icon circle {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.treatment-icon circle { fill: #dcebe5; }
+
+.game-question-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.game-controls {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  box-shadow: var(--shadow);
+}
+
+.student-screen.wide {
+  display: block;
+  padding: 1rem;
+}
+
+.student-header {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.student-score {
+  min-width: 92px;
+  text-align: center;
+  border-radius: 14px;
+  background: #e7f0f7;
+  color: #164e69;
+  padding: 0.7rem;
+}
+
+.student-score strong {
+  display: block;
+  font-size: 2rem;
+}
+
+.student-score span {
+  color: #37677c;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.student-lesson-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.results-screen {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.results-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  background: #eef4f1;
+  border: 1px solid #d3e0db;
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.result-number {
+  min-width: 160px;
+  text-align: center;
+}
+
+.result-number strong {
+  display: block;
+  font-size: 4rem;
+  color: var(--danger-dark);
+  line-height: 1;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+}
+
+.review-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 220px;
+  gap: 1rem;
+}
+
+.handout-placeholder {
+  min-height: 180px;
+  border: 2px dashed #b8c8c1;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  text-align: center;
+  padding: 1rem;
+  font-weight: 800;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(23, 35, 38, 0.62);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.password-modal, .dev-shell {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.24);
+}
+
+.password-modal {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 1.3rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.modal-close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+}
+
+.form-error {
+  background: #f8eaea;
+  border: 1px solid #e1b6b6;
+  color: var(--danger-dark);
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  font-weight: 800;
+}
+
+.form-error.inline { margin-bottom: 0.75rem; }
+
+.dev-shell {
+  width: min(1180px, 100%);
+  max-height: 92vh;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  padding: 1rem;
+}
+
+.tab-row {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.7rem;
+  margin-bottom: 0.9rem;
+}
+
+.tab-row button {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  font-weight: 900;
+  border-radius: 999px;
+  padding: 0.55rem 0.85rem;
+}
+
+.tab-row button.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.dev-body {
+  overflow: auto;
+  padding-right: 0.35rem;
+}
+
+.editor-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.editor-item {
+  display: grid;
+  gap: 0.75rem;
+  background: #fbfaf6;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.effect-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.json-editor {
+  display: grid;
+  gap: 1rem;
+}
+
+.json-editor textarea {
+  min-height: 260px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.84rem;
+}
+
+.empty-state {
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  min-height: 140px;
+}
+
+@keyframes pulseCell {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+@keyframes removeTumor {
+  0%, 45% { opacity: 0; transform: translateX(0); }
+  55%, 100% { opacity: 0.85; transform: translateX(32px); }
+}
+
+@keyframes flowDrug {
+  0% { transform: translateX(-24px); opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { transform: translateX(160px); opacity: 0.3; }
+}
+
+@keyframes meterPulse {
+  0%, 100% { width: 48px; }
+  50% { width: 86px; }
+}
+
+@keyframes beamSweep {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+@keyframes crackFlicker {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+@keyframes dash {
+  to { stroke-dashoffset: -16; }
+}
+
+@keyframes shieldDrop {
+  0%, 45% { opacity: 0.85; transform: translateY(0); }
+  70%, 100% { opacity: 0.2; transform: translateY(18px); }
+}
+
+@keyframes lightFlash {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes radicalFade {
+  0% { transform: scale(0.6); opacity: 0; }
+  50% { transform: scale(1.5); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0; }
+}
+
+@media (max-width: 1120px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .control-rail, .analytics-rail {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .metric-stack {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 860px) {
+  .landing {
+    padding: 1rem;
+  }
+  .landing-grid, .lesson-viewer, .game-layout, .game-question-row, .review-columns {
+    grid-template-columns: 1fr;
+  }
+  .patient-map { height: 300px; }
+  .game-topbar {
+    grid-template-columns: 1fr 1fr;
+  }
+  .health-block {
+    grid-column: 1 / -1;
+  }
+  .resource-panel {
+    order: 2;
+  }
+  .control-rail, .analytics-rail, .results-grid, .effect-grid {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-header, .student-header, .dev-header, .results-hero, .game-ready {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .dev-actions, .header-actions {
+    width: 100%;
+  }
+  .dev-actions .button, .header-actions .button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .landing-actions, .button-row {
+    flex-direction: column;
+  }
+  .mission-stats {
+    grid-template-columns: 1fr;
+  }
+  .student-screen.wide, .presenter-dashboard {
+    padding: 0.65rem;
+  }
+  .lesson-viewer, .question-card, .battlefield-panel, .resource-panel {
+    border-radius: 14px;
+    padding: 0.8rem;
+  }
+  .overlay-animation {
+    min-height: 240px;
+  }
+  .game-topbar {
+    grid-template-columns: 1fr;
+  }
+  .treatment-card {
+    grid-template-columns: 46px 1fr;
+  }
+  .treatment-card .button {
+    grid-column: 1 / -1;
+  }
+  .choice-button {
+    min-height: 68px;
+  }
+}
