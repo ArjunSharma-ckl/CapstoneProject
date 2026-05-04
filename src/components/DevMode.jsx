@@ -3,9 +3,17 @@ import { defaultLessonData } from '../data/defaultLessonData.js';
 
 const PASSWORD = 'CapstonProjectA4';
 const tabs = ['Slides', 'Questions', 'Treatments', 'Game', 'Review', 'JSON'];
+const animationPresets = [
+  { value: 'cell-division', label: 'Cell division pulse' },
+  { value: 'radiation', label: 'Radiation beam' },
+  { value: 'chemotherapy', label: 'Chemo particles' },
+  { value: 'immunotherapy', label: 'T-cell attack' },
+  { value: 'surgery', label: 'Surgery outline/remove' },
+  { value: 'pdt', label: 'PDT light activation' }
+];
 
-export default function DevMode({ lessonData, onSave, onReset, onClose }) {
-  const [unlocked, setUnlocked] = useState(false);
+export default function DevMode({ lessonData, onSave, onReset, onClose = () => {}, embedded = false, initialUnlocked = false }) {
+  const [unlocked, setUnlocked] = useState(initialUnlocked);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [draft, setDraft] = useState(() => structuredClone(lessonData));
@@ -156,9 +164,8 @@ export default function DevMode({ lessonData, onSave, onReset, onClose }) {
     );
   }
 
-  return (
-    <div className="modal-backdrop">
-      <section className="dev-shell">
+  const editor = (
+    <section className={`dev-shell ${embedded ? 'embedded' : ''}`}>
         <header className="dev-header">
           <div>
             <div className="eyebrow">Local content editor</div>
@@ -168,7 +175,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose }) {
             <button className="button primary" onClick={save}>Save changes</button>
             <button className="button secondary" onClick={reset}>Reset to default content</button>
             <button className="button secondary" onClick={exportJson}>Export JSON</button>
-            <button className="button ghost" onClick={onClose}>Close</button>
+            {!embedded && <button className="button ghost" onClick={onClose}>Close</button>}
           </div>
         </header>
 
@@ -196,7 +203,13 @@ export default function DevMode({ lessonData, onSave, onReset, onClose }) {
                   </div>
                   <label>Title<input value={slide.title} onChange={(event) => updateArrayItem('slides', slide.id, 'title', event.target.value)} /></label>
                   <label>Description<textarea value={slide.description} onChange={(event) => updateArrayItem('slides', slide.id, 'description', event.target.value)} /></label>
-                  <label>Animation type<input value={slide.animationType} onChange={(event) => updateArrayItem('slides', slide.id, 'animationType', event.target.value)} /></label>
+                  <label>Animation preset
+                    <select value={slide.animationType} onChange={(event) => updateArrayItem('slides', slide.id, 'animationType', event.target.value)}>
+                      {animationPresets.map((preset) => (
+                        <option key={preset.value} value={preset.value}>{preset.label}</option>
+                      ))}
+                    </select>
+                  </label>
                   <label>Focus label<input value={slide.focus} onChange={(event) => updateArrayItem('slides', slide.id, 'focus', event.target.value)} /></label>
                 </article>
               ))}
@@ -303,7 +316,14 @@ export default function DevMode({ lessonData, onSave, onReset, onClose }) {
             </div>
           )}
         </div>
-      </section>
+    </section>
+  );
+
+  if (embedded) return editor;
+
+  return (
+    <div className="modal-backdrop">
+      {editor}
     </div>
   );
 }

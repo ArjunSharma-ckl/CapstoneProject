@@ -1,7 +1,8 @@
 export default function LessonViewer({ lessonData, slideIndex = 0, animation, compact = false }) {
   const slides = [...(lessonData.slides || [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const slide = slides[slideIndex] || slides[0];
-  const animationType = animation?.type || slide?.animationType || 'cancer-cells';
+  const animationType = normalizeAnimation(animation?.type || slide?.animationType || 'cancer-cells');
+  const pdf = lessonData.pdf || null;
 
   // PDF.js or a static PDF embed can be connected here later as a slide background.
   // The React overlay animation intentionally remains separate so presenter-triggered
@@ -12,11 +13,17 @@ export default function LessonViewer({ lessonData, slideIndex = 0, animation, co
 
   return (
     <section className={`lesson-viewer ${compact ? 'compact' : ''}`}>
-      <div className="slide-copy">
-        <div className="slide-kicker">Slide {slideIndex + 1} of {slides.length} · {slide.focus}</div>
-        <h2>{slide.title}</h2>
-        <p>{slide.description}</p>
-      </div>
+      {pdf ? (
+        <div className="pdf-slide-frame">
+          <iframe title={pdf.name || 'Uploaded presentation PDF'} src={`${pdf.dataUrl}#page=${slideIndex + 1}&toolbar=0&navpanes=0`} />
+        </div>
+      ) : (
+        <div className="slide-copy">
+          <div className="slide-kicker">Slide {slideIndex + 1} of {slides.length} · {slide.focus}</div>
+          <h2>{slide.title}</h2>
+          <p>{slide.description}</p>
+        </div>
+      )}
       <OverlayAnimation type={animationType} nonce={animation?.nonce} />
     </section>
   );
@@ -85,4 +92,15 @@ function OverlayAnimation({ type, nonce }) {
       </svg>
     </div>
   );
+}
+
+function normalizeAnimation(type) {
+  const value = String(type || '').toLowerCase();
+  if (value.includes('cell')) return 'cell-division';
+  if (value.includes('radiation')) return 'radiation';
+  if (value.includes('chemo')) return 'chemotherapy';
+  if (value.includes('t-cell') || value.includes('immune') || value.includes('cart')) return 'immunotherapy';
+  if (value.includes('surgery')) return 'surgery';
+  if (value.includes('pdt') || value.includes('photo') || value.includes('light')) return 'pdt';
+  return value.replace(/[^a-z0-9]+/g, '-');
 }

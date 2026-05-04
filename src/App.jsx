@@ -6,6 +6,8 @@ import StudentJoin from './components/StudentJoin.jsx';
 import PresenterDashboard from './components/PresenterDashboard.jsx';
 import StudentView from './components/StudentView.jsx';
 import DevMode from './components/DevMode.jsx';
+import PasswordGate from './components/PasswordGate.jsx';
+import PresentationView from './components/PresentationView.jsx';
 
 const STORAGE_KEY = 'capstoneCancerLessonData';
 
@@ -19,10 +21,12 @@ function readLessonData() {
 }
 
 export default function App() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const presentationRoom = searchParams.get('room');
   const socketRef = useRef(null);
-  const [view, setView] = useState('landing');
+  const [view, setView] = useState(searchParams.get('presentation') === '1' ? 'presentation' : 'landing');
   const [lessonData, setLessonData] = useState(readLessonData);
-  const [roomCode, setRoomCode] = useState(lessonData.roomCode || 'BIO123');
+  const [roomCode, setRoomCode] = useState(presentationRoom || lessonData.roomCode || 'BIO123');
   const [studentName, setStudentName] = useState('');
   const [roomState, setRoomState] = useState(null);
   const [connected, setConnected] = useState(false);
@@ -39,6 +43,12 @@ export default function App() {
     });
     return () => socket.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (view === 'presentation' && connected) {
+      socketRef.current?.emit('room:watch', { roomCode });
+    }
+  }, [connected, roomCode, view]);
 
   const activeLessonData = useMemo(
     () => roomState?.lessonData || lessonData,
@@ -88,9 +98,16 @@ export default function App() {
           connected={connected}
           roomCode={roomCode}
           setRoomCode={setRoomCode}
-          onPresenter={createPresenterRoom}
+          onPresenter={() => setView('presenterLogin')}
           onStudent={() => setView('join')}
           onDev={() => setDevOpen(true)}
+        />
+      )}
+
+      {view === 'presenterLogin' && (
+        <PasswordGate
+          onSuccess={() => createPresenterRoom(roomCode)}
+          onCancel={() => setView('landing')}
         />
       )}
 
@@ -113,7 +130,8 @@ export default function App() {
           onCreateRoom={createPresenterRoom}
           onControl={emitControl}
           onBack={() => setView('landing')}
-          onDev={() => setDevOpen(true)}
+          onSaveLessonData={saveLessonData}
+          onResetLessonData={resetLessonData}
         />
       )}
 
@@ -126,6 +144,14 @@ export default function App() {
           lessonData={activeLessonData}
           socket={socketRef.current}
           onBack={() => setView('join')}
+        />
+      )}
+
+      {view === 'presentation' && (
+        <PresentationView
+          roomCode={roomCode}
+          roomState={roomState}
+          lessonData={activeLessonData}
         />
       )}
 

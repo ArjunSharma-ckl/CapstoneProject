@@ -4,7 +4,7 @@ export const slides = [
     order: 1,
     title: 'Cancer Treatments: Matching the Tool to the Disease',
     description: 'Cancer is uncontrolled cell growth caused by mutations that disrupt normal cell cycle control. Today the class will choose treatments based on cancer type, location, spread, and severity.',
-    animationType: 'cancer-cells',
+    animationType: 'cell-division',
     focus: 'Cancer basics'
   },
   {
@@ -12,7 +12,7 @@ export const slides = [
     order: 2,
     title: 'Why There Is No One Cure',
     description: 'Cancer is not one disease. Different tissues, mutations, stages, immune interactions, and resistance patterns change what treatment can work.',
-    animationType: 'mutation',
+    animationType: 'cell-division',
     focus: 'Cancer diversity'
   },
   {
@@ -52,7 +52,7 @@ export const slides = [
     order: 7,
     title: 'CAR T-cell Therapy',
     description: 'CAR T-cell therapy modifies a patient’s T cells so they recognize cancer antigens. It has been especially useful for some blood cancers.',
-    animationType: 'cart',
+    animationType: 'immunotherapy',
     focus: 'Engineered cells'
   },
   {
@@ -68,7 +68,7 @@ export const slides = [
     order: 9,
     title: 'Why Doctors Combine Treatments',
     description: 'Treatments work in different ways. Combining surgery, chemo, radiation, immunotherapy, or newer targeted approaches can attack cancer from more than one direction.',
-    animationType: 'combination',
+    animationType: 'immunotherapy',
     focus: 'Treatment planning'
   },
   {
@@ -76,7 +76,7 @@ export const slides = [
     order: 10,
     title: 'New and Promising Directions',
     description: 'Researchers study targeted therapy, cancer vaccines, improved immunotherapies, gene-based approaches, better drug delivery, and personalized treatment based on tumor biology.',
-    animationType: 'research',
+    animationType: 'cell-division',
     focus: 'Future treatments'
   },
   {
@@ -84,7 +84,7 @@ export const slides = [
     order: 11,
     title: 'Final Mission: Treatment Team',
     description: 'Answer questions to earn treatment charges. Then use the best treatment cards for the cancer scenario to lower the shared cancer health bar.',
-    animationType: 'game',
+    animationType: 'radiation',
     focus: 'Cooperative review'
   }
 ];

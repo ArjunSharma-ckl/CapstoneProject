@@ -31,8 +31,11 @@ function createRoom(roomCode, lessonData) {
       questionStartedAt: null,
       revealAnswers: false,
       animation: { type: null, nonce: 0 },
+      animationOverlay: true,
+      pdf: null,
       students: [],
       responses: {},
+      showResults: false,
       conceptStats: {},
       game: {
         active: false,
@@ -102,7 +105,9 @@ function resetSession(room, keepStudents = true) {
   room.activeQuestionId = null;
   room.questionStartedAt = null;
   room.revealAnswers = false;
+  room.showResults = false;
   room.animation = { type: null, nonce: 0 };
+  room.animationOverlay = true;
   room.responses = {};
   room.conceptStats = {};
   room.game = {
@@ -132,6 +137,14 @@ io.on('connection', (socket) => {
     socket.join(room.roomCode);
     socket.data.roomCode = room.roomCode;
     socket.data.role = 'presenter';
+    emitRoom(room.roomCode);
+  });
+
+  socket.on('room:watch', ({ roomCode }) => {
+    const room = createRoom(roomCode);
+    socket.join(room.roomCode);
+    socket.data.roomCode = room.roomCode;
+    socket.data.role = 'watcher';
     emitRoom(room.roomCode);
   });
 
@@ -173,17 +186,26 @@ io.on('connection', (socket) => {
     if (action === 'animation:trigger') {
       room.animation = { type: payload.type, nonce: room.animation.nonce + 1 };
     }
+    if (action === 'animation:toggle') room.animationOverlay = Boolean(payload.enabled);
+    if (action === 'pdf:set') {
+      room.pdf = payload.pdf || null;
+      room.slideIndex = 0;
+    }
+    if (action === 'slide:send') room.lessonStarted = true;
     if (action === 'question:launch') {
       room.activeQuestionId = payload.questionId;
       room.questionStartedAt = Date.now();
       room.revealAnswers = false;
+      room.showResults = false;
       room.responses[payload.questionId] = [];
     }
     if (action === 'question:reveal') room.revealAnswers = true;
+    if (action === 'question:results') room.showResults = true;
     if (action === 'question:clear') {
       room.activeQuestionId = null;
       room.questionStartedAt = null;
       room.revealAnswers = false;
+      room.showResults = false;
     }
     if (action === 'game:start') {
       room.game.active = true;

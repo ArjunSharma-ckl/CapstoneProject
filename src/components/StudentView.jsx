@@ -7,6 +7,7 @@ export default function StudentView({ connected, roomCode, studentName, roomStat
   const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
   const me = roomState?.students?.find((student) => student.name === studentName);
+  const studentLessonData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : lessonData;
 
   function answer(payload) {
     socket?.emit('student:answer', {
@@ -61,7 +62,12 @@ export default function StudentView({ connected, roomCode, studentName, roomStat
         />
       ) : (
         <div className="student-lesson-stack">
-          <LessonViewer lessonData={lessonData} slideIndex={roomState.slideIndex} animation={roomState.animation} compact />
+          <LessonViewer
+            lessonData={studentLessonData}
+            slideIndex={roomState.slideIndex}
+            animation={roomState.animationOverlay !== false ? roomState.animation : { type: null, nonce: 0 }}
+            compact
+          />
           {activeQuestion ? (
             <QuestionCard
               question={activeQuestion}

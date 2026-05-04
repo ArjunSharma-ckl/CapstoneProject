@@ -48,13 +48,14 @@ After `dist/` exists, `npm start` serves the built React app from Express.
 
 ## Presenter Use
 
-1. Open the site and choose **Open Presenter Dashboard**.
-2. Use the default room code `BIO123` or type a custom code.
-3. Tell students the room code.
-4. Use the dashboard to start the lesson, move slides, trigger slide animations, launch questions, reveal answers, and monitor class accuracy.
-5. Start the final game when ready. Students earn treatment charges by answering questions.
-6. Use treatment cards during attack phases. Treatment damage changes by scenario and mutation status.
-7. Reset the session when you want to restart the room.
+1. Open the site and choose **Presenter Login**.
+2. Enter the presenter password: `CapstonProjectA4`.
+3. Use the default room code `BIO123` or type a custom code.
+4. Tell students the room code.
+5. Use the dashboard tabs: Slides, Questions, Students, Game, and Dev/Edit Content.
+6. In Slides, use **Open Presentation View** for the projected class screen.
+7. Start **GAME TIME!** when ready. Students earn treatment charges by answering questions.
+8. Use treatment cards during attack phases. Treatment damage changes by scenario and mutation status.
 
 ## Student Use
 
@@ -66,7 +67,7 @@ After `dist/` exists, `npm start` serves the built React app from Express.
 
 ## Hidden Dev/Admin Mode
 
-The small **Dev** button is in the landing page footer and presenter header.
+The small **Dev** button is in the home page footer. The full editor is also available inside the password-protected presenter dashboard under **Dev/Edit Content**.
 
 Password:
 
