@@ -41,7 +41,7 @@ export default function PresenterDashboard({
           <p>Students join this code. The projected presentation view can open after the room is created.</p>
           <label>
             Room code
-            <input value={roomCode} onChange={(event) => setRoomCode(event.target.value.toUpperCase())} />
+            <input value={roomCode} onChange={(event) => setRoomCode(event.target.value.toUpperCase())} placeholder="BIO123" />
           </label>
           <button className="button primary large" onClick={() => onCreateRoom(roomCode)} disabled={!connected}>
             Create Room
@@ -55,7 +55,7 @@ export default function PresenterDashboard({
     <main className="presenter-dashboard simple-dashboard">
       <header className="dashboard-header">
         <div>
-          <h1>Cancer Treatments Interactive Lesson</h1>
+          <h1>Presenter Dashboard</h1>
           <p>Room {roomState.roomCode}</p>
         </div>
         <div className="header-actions">

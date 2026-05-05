@@ -90,12 +90,16 @@ export default function App() {
     });
   }
 
+  function returnHome() {
+    setRoomCode(lessonData.roomCode || 'BIO123');
+    setView('landing');
+  }
+
   return (
     <div className="app-shell">
       {view === 'landing' && (
         <LandingPage
           lessonData={lessonData}
-          connected={connected}
           roomCode={roomCode}
           setRoomCode={setRoomCode}
           onPresenter={() => setView('presenterLogin')}
@@ -106,8 +110,9 @@ export default function App() {
 
       {view === 'presenterLogin' && (
         <PasswordGate
+          lessonData={lessonData}
           onSuccess={() => createPresenterRoom(roomCode)}
-          onCancel={() => setView('landing')}
+          onCancel={returnHome}
         />
       )}
 
@@ -115,8 +120,9 @@ export default function App() {
         <StudentJoin
           defaultRoomCode={roomCode}
           connected={connected}
+          lessonData={lessonData}
           onJoin={joinRoom}
-          onBack={() => setView('landing')}
+          onBack={returnHome}
         />
       )}
 
@@ -129,7 +135,7 @@ export default function App() {
           lessonData={activeLessonData}
           onCreateRoom={createPresenterRoom}
           onControl={emitControl}
-          onBack={() => setView('landing')}
+          onBack={returnHome}
           onSaveLessonData={saveLessonData}
           onResetLessonData={resetLessonData}
         />
@@ -143,7 +149,7 @@ export default function App() {
           roomState={roomState}
           lessonData={activeLessonData}
           socket={socketRef.current}
-          onBack={() => setView('join')}
+          onBack={returnHome}
         />
       )}
 

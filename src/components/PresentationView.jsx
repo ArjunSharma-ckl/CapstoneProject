@@ -10,8 +10,9 @@ export default function PresentationView({ roomCode, roomState, lessonData }) {
   if (!roomState) {
     return (
       <main className="projection-view waiting">
-        <h1>Cancer Treatments Interactive Lesson</h1>
+        <h1>Waiting for presenter</h1>
         <p>Waiting for room {roomCode}</p>
+        <footer className="app-footer">{lessonData.footerDisclaimer}</footer>
       </main>
     );
   }
@@ -20,6 +21,7 @@ export default function PresentationView({ roomCode, roomState, lessonData }) {
     return (
       <main className="projection-view">
         <ResultsScreen lessonData={lessonData} roomState={roomState} />
+        <footer className="app-footer">{lessonData.footerDisclaimer}</footer>
       </main>
     );
   }
@@ -33,6 +35,7 @@ export default function PresentationView({ roomCode, roomState, lessonData }) {
           activeQuestion={activeQuestion}
           activeResponses={activeResponses}
         />
+        <footer className="app-footer">{lessonData.footerDisclaimer}</footer>
       </main>
     );
   }
@@ -51,6 +54,7 @@ export default function PresentationView({ roomCode, roomState, lessonData }) {
           {roomState.revealAnswers && <p>{activeQuestion.explanation}</p>}
         </section>
       )}
+      <footer className="app-footer">{lessonData.footerDisclaimer}</footer>
     </main>
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function StudentJoin({ defaultRoomCode, connected, onJoin, onBack }) {
+export default function StudentJoin({ defaultRoomCode, connected, lessonData, onJoin, onBack }) {
   const [name, setName] = useState('');
   const [code, setCode] = useState(defaultRoomCode || 'BIO123');
 
@@ -29,9 +29,10 @@ export default function StudentJoin({ defaultRoomCode, connected, onJoin, onBack
         </button>
         <div className="system-line">
           <span className={`status-dot ${connected ? 'online' : ''}`} />
-          {connected ? 'Ready to join' : 'Waiting for realtime server'}
+          {connected ? 'Ready' : 'Connecting'}
         </div>
       </form>
+      <footer className="app-footer">{lessonData?.footerDisclaimer}</footer>
     </main>
   );
 }
