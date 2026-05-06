@@ -1917,7 +1917,7 @@ textarea,
 
 .cell-battle-topbar {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) auto auto;
+  grid-template-columns: minmax(240px, 1fr) auto auto auto;
   gap: 0.75rem;
   align-items: center;
   border-bottom: 2px solid #1f2d2f;
@@ -1936,7 +1936,8 @@ textarea,
 }
 
 .mutation-chip,
-.energy-chip {
+.energy-chip,
+.health-chip {
   border: 2px solid #1f2d2f;
   background: #fff1d7;
   padding: 0.5rem 0.7rem;
@@ -1945,6 +1946,15 @@ textarea,
 
 .energy-chip {
   background: #e4eee9;
+}
+
+.health-chip {
+  background: #e8f3ee;
+}
+
+.health-chip.low {
+  background: #f8eaea;
+  color: #823535;
 }
 
 .cell-battle-layout {
@@ -1972,6 +1982,23 @@ textarea,
   background-size: 48px 48px;
 }
 
+.map-radiation-layer {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(138, 34, 255, 0.12) 0,
+      rgba(138, 34, 255, 0.12) 12px,
+      rgba(211, 140, 255, 0.18) 12px,
+      rgba(211, 140, 255, 0.18) 24px
+    );
+  border: 3px solid rgba(183, 0, 255, 0.55);
+  box-shadow: inset 0 0 38px rgba(183, 0, 255, 0.55) !important;
+  pointer-events: none;
+  z-index: 1;
+}
+
 .treatment-zone {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -1984,6 +2011,7 @@ textarea,
   font-size: 0.82rem;
   font-weight: 900;
   color: #164e69;
+  z-index: 2;
 }
 
 .zone-surgery { border-color: #0d5f57; color: #084640; }
@@ -1996,31 +2024,86 @@ textarea,
 .player-capsule {
   position: absolute;
   transform: translate(-50%, -50%);
-  min-width: 96px;
-  height: 38px;
-  background: #fffdf8;
-  border: 3px solid var(--primary);
+  width: 82px;
+  height: 82px;
+  background: conic-gradient(var(--hp-color, #2f9e67) var(--hp-angle, 360deg), #2b1836 var(--hp-angle, 360deg) 360deg);
+  border: 2px solid #1f2d2f;
   display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0 0.55rem;
-  font-size: 0.78rem;
+  place-items: center;
+  padding: 6px;
+  font-size: 0.72rem;
   font-weight: 900;
   z-index: 4;
+  border-radius: 50% !important;
 }
 
-.player-capsule strong {
+.player-capsule.downed {
+  opacity: 0.72;
+  filter: grayscale(0.35);
+}
+
+.player-core {
+  position: relative;
+  z-index: 2;
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  background: var(--player-color, #0d5f57);
+  border: 2px solid #1f2d2f;
+  color: #fff;
+  border-radius: 50% !important;
+}
+
+.player-initial {
+  font-size: 1.45rem;
+  line-height: 1;
+  text-shadow: 0 1px 0 #1f2d2f;
+}
+
+.player-stat-stack {
+  position: absolute;
+  z-index: 3;
+  bottom: 8px;
+  right: -12px;
+  display: grid;
+  gap: 0.15rem;
+  justify-items: end;
+}
+
+.player-stat-stack strong,
+.player-stat-stack em {
   background: #e4eee9;
-  border-left: 1px solid #bfc8c4;
-  padding-left: 0.35rem;
+  border: 1px solid #bfc8c4;
+  padding: 0.08rem 0.25rem;
+  font-style: normal;
+  line-height: 1.1;
+}
+
+.player-stat-stack em {
+  background: #e8f3ee;
+}
+
+.player-name {
+  position: absolute;
+  z-index: 3;
+  top: 86px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 104px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #fffdf8;
+  border: 1px solid #1f2d2f;
+  padding: 0.12rem 0.35rem;
 }
 
 .map-cancer-cell {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 118px;
-  min-height: 96px;
+  width: 96px;
+  min-height: 82px;
   display: grid;
   justify-items: center;
   gap: 0.25rem;
@@ -2033,14 +2116,27 @@ textarea,
   opacity: 0.35;
 }
 
+.radiation-field {
+  position: absolute;
+  inset: -42px;
+  border: 3px solid rgba(216, 126, 255, 0.72);
+  background: radial-gradient(circle, rgba(151, 39, 255, 0.28) 0%, rgba(151, 39, 255, 0.12) 48%, rgba(151, 39, 255, 0) 72%);
+  border-radius: 50% !important;
+  box-shadow: 0 0 18px #b700ff, inset 0 0 24px rgba(183, 0, 255, 0.55) !important;
+  z-index: -1;
+}
+
 .cancer-core {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   display: grid;
   place-items: center;
-  background: #d86565;
-  border: 3px solid #823535;
-  color: #3c1111;
+  background: #8a22ff;
+  border: 3px solid #d38cff;
+  color: #fff;
+  border-radius: 50% !important;
+  box-shadow: 0 0 14px #b700ff, 0 0 30px rgba(183, 0, 255, 0.78) !important;
+  text-shadow: 0 0 5px #33005c;
 }
 
 .cell-mini-bar {
@@ -2053,7 +2149,7 @@ textarea,
 .cell-mini-bar b {
   display: block;
   height: 100%;
-  background: #b94b4b;
+  background: #8a22ff;
 }
 
 .cell-battle-side {
@@ -2065,6 +2161,16 @@ textarea,
 .attack-panel {
   display: grid;
   gap: 0.4rem;
+}
+
+.get-question-button {
+  min-height: 54px;
+  font-weight: 900;
+}
+
+.heal-button {
+  min-height: 50px;
+  font-weight: 900;
 }
 
 .attack-button {
@@ -2084,6 +2190,16 @@ textarea,
 .attack-button:disabled {
   background: #e9e5dc;
   color: #737b78;
+}
+
+.attack-button.needs-energy {
+  background: #f2eee5;
+  color: #495552;
+}
+
+.attack-button.available {
+  background: #fffdf8;
+  border-color: #0d5f57;
 }
 
 .move-pad {
@@ -2127,7 +2243,7 @@ textarea,
 
 .contribution-row {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   gap: 0.5rem;
   border-top: 1px solid #d7dedc;
   padding-top: 0.45rem;
@@ -2141,7 +2257,7 @@ textarea,
 
 .presenter-game-controls {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) repeat(6, auto) minmax(160px, auto);
+  grid-template-columns: repeat(5, auto) minmax(160px, auto);
   align-items: center;
   gap: 0.5rem;
 }
@@ -2165,4 +2281,21 @@ textarea,
   .cell-map {
     min-height: 420px;
   }
+}
+
+.student-game-screen {
+  padding: 0;
+}
+
+.student-game-screen .cell-battle {
+  min-height: 100vh;
+  border: 0;
+}
+
+.student-game-screen .cell-battle-layout {
+  min-height: calc(100vh - 74px);
+}
+
+.projection-view .cell-battle {
+  min-height: calc(100vh - 2rem);
 }

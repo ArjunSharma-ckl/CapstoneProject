@@ -74,9 +74,29 @@ export default function GameArena({
 
   function attack(attackId) {
     if (!socket || !currentPlayer) return;
+    const selectedAttack = attacks.find((item) => item.id === attackId);
+    if (selectedAttack && currentPlayer.energy < selectedAttack.cost) {
+      requestQuestion();
+      return;
+    }
     const liveCells = (game?.cells || []).filter((cell) => cell.health > 0);
     const closest = liveCells.sort((a, b) => distance(currentPlayer, a) - distance(currentPlayer, b))[0];
     socket.emit('game:attack', { roomCode, attackId, cellId: closest?.id });
+  }
+
+  function requestQuestion() {
+    socket?.emit('game:requestQuestion', { roomCode });
+  }
+
+  function heal() {
+    if (!socket || !currentPlayer) return;
+    const maxHealth = currentPlayer.maxHealth || 100;
+    if ((currentPlayer.health ?? maxHealth) >= maxHealth) return;
+    if ((currentPlayer.energy || 0) < 25) {
+      requestQuestion();
+      return;
+    }
+    socket.emit('game:heal', { roomCode });
   }
 
   if (!game || game.status === 'lobby') {
@@ -119,13 +139,20 @@ export default function GameArena({
       <header className="cell-battle-topbar">
         <div className="cell-health">
           <div className="health-row">
-            <strong>Cancer Cell Health: {game.totalHealth} HP</strong>
+            <strong>Cancer Health: {game.totalHealth} HP</strong>
             <span>{game.status === 'paused' ? 'Paused' : `Round ${game.round || 1}`}</span>
           </div>
           <div className="health-bar"><span style={{ width: `${healthPercent}%` }} /></div>
         </div>
         {game.currentMutation && <div className="mutation-chip">{game.currentMutation.title}</div>}
-        {!presenter && <div className="energy-chip">Energy {currentPlayer?.energy || 0}</div>}
+        {!presenter && (
+          <>
+            <div className="energy-chip">Energy {currentPlayer?.energy || 0}</div>
+            <div className={`health-chip ${(currentPlayer?.health ?? 100) <= 25 ? 'low' : ''}`}>
+              HP {currentPlayer?.health ?? 100}
+            </div>
+          </>
+        )}
       </header>
 
       <div className="cell-battle-layout">
@@ -146,6 +173,14 @@ export default function GameArena({
 
           {!presenter && !readOnly && (
             <>
+              <button className="button primary get-question-button" onClick={requestQuestion}>Get Question</button>
+              <button
+                className="button secondary heal-button"
+                onClick={heal}
+                disabled={!currentPlayer || (currentPlayer.health ?? currentPlayer.maxHealth ?? 100) >= (currentPlayer.maxHealth || 100)}
+              >
+                Heal
+              </button>
               <AttackPanel player={currentPlayer} onAttack={attack} />
               <MovePad onMove={movePlayer} disabled={game.status !== 'running'} />
             </>
@@ -165,9 +200,11 @@ export default function GameArena({
 }
 
 function GameMap({ game, players }) {
+  const radiationActive = game.cells.some((cell) => cell.health > 0);
   return (
     <div className="cell-map" aria-label="Treatment Team map">
       <div className="map-grid" />
+      {radiationActive && <div className="map-radiation-layer" aria-hidden="true" />}
       {Object.entries(zones).map(([id, zone]) => (
         <div
           key={id}
@@ -184,10 +221,30 @@ function GameMap({ game, players }) {
 }
 
 function PlayerCapsule({ player }) {
+  const health = player.health ?? player.maxHealth ?? 100;
+  const maxHealth = player.maxHealth || 100;
+  const healthPercent = Math.max(0, Math.min(100, Math.round((health / maxHealth) * 100)));
+  const hpColor = healthPercent <= 25 ? '#d94b4b' : healthPercent <= 50 ? '#d88a22' : '#2f9e67';
+  const initial = player.name?.trim()?.[0]?.toUpperCase() || '?';
   return (
-    <div className="player-capsule" style={{ left: `${player.x}%`, top: `${player.y}%`, borderColor: player.color }}>
-      <span>{player.name}</span>
-      <strong>{player.energy}</strong>
+    <div
+      className={`player-capsule ${health <= 0 ? 'downed' : ''}`}
+      style={{
+        left: `${player.x}%`,
+        top: `${player.y}%`,
+        '--player-color': player.color,
+        '--hp-angle': `${healthPercent * 3.6}deg`,
+        '--hp-color': hpColor
+      }}
+    >
+      <span className="player-core">
+        <span className="player-initial">{initial}</span>
+      </span>
+      <span className="player-stat-stack">
+        <strong>{player.energy}E</strong>
+        <em>{health}HP</em>
+      </span>
+      <span className="player-name">{player.name}</span>
     </div>
   );
 }
@@ -196,8 +253,8 @@ function CancerCell({ cell }) {
   const percent = Math.max(0, Math.round((cell.health / cell.maxHealth) * 100));
   return (
     <div className={`map-cancer-cell ${cell.health <= 0 ? 'defeated' : ''}`} style={{ left: `${cell.x}%`, top: `${cell.y}%` }}>
+      <span className="radiation-field" aria-hidden="true" />
       <div className="cancer-core">{cell.health}</div>
-      <span>{cell.label}</span>
       <div className="cell-mini-bar"><b style={{ width: `${percent}%` }} /></div>
     </div>
   );
@@ -206,17 +263,21 @@ function CancerCell({ cell }) {
 function AttackPanel({ player, onAttack }) {
   return (
     <div className="attack-panel">
-      {attacks.map((attack) => (
-        <button
-          key={attack.id}
-          className="attack-button"
-          disabled={!player || player.energy < attack.cost}
-          onClick={() => onAttack(attack.id)}
-        >
-          <span>{attack.name}</span>
-          <strong>{attack.cost} Energy</strong>
-        </button>
-      ))}
+      {attacks.map((attack) => {
+        const needsHeal = player && (player.health ?? player.maxHealth ?? 100) <= 0;
+        const canUse = player && !needsHeal && player.energy >= attack.cost;
+        return (
+          <button
+            key={attack.id}
+            className={`attack-button ${canUse ? 'available' : 'needs-energy'}`}
+            disabled={!player || needsHeal}
+            onClick={() => onAttack(attack.id)}
+          >
+            <span>{attack.name}</span>
+            <strong>{needsHeal ? 'Heal first' : canUse ? `${attack.cost} Energy` : 'Get question'}</strong>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -243,6 +304,7 @@ function ContributionTable({ players }) {
         <div className="contribution-row" key={player.id}>
           <span>{player.name}</span>
           <b>{player.energy} E</b>
+          <b>{player.health ?? player.maxHealth ?? 100} HP</b>
           <b>{player.contribution || 0} dmg</b>
         </div>
       ))}

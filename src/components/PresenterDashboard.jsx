@@ -23,7 +23,8 @@ export default function PresenterDashboard({
   const [activeTab, setActiveTab] = useState('SLIDES');
   const uploadedSlides = roomState?.pdf?.type === 'pptx' ? roomState.pdf.slides : [];
   const currentIndex = roomState?.slideIndex || 0;
-  const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId);
+  const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId)
+    || (roomState?.game?.currentQuestion?.id === roomState?.activeQuestionId ? roomState.game.currentQuestion : null);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
   const allResponses = Object.values(roomState?.responses || {}).flat();
   const accuracy = allResponses.length
@@ -37,7 +38,7 @@ export default function PresenterDashboard({
         <div className="setup-card">
           <button className="button ghost back-button" onClick={onBack}>Back</button>
           <label className="control-only">
-            <input aria-label="Room code" value={roomCode} onChange={(event) => setRoomCode(event.target.value.toUpperCase())} placeholder="BIO123" />
+            <input aria-label="Room code" value={roomCode} onChange={(event) => setRoomCode(event.target.value.toUpperCase())} placeholder="ENTER CODE HERE" />
           </label>
           <button className="button primary large" onClick={() => onCreateRoom(roomCode)} disabled={!connected || !roomCode.trim()}>
             Create Room
@@ -134,8 +135,9 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
-      onControl('pdf:set', { pdf: { type: 'pdf', name: file.name, dataUrl: reader.result } });
+    reader.onload = async () => {
+      const pageCount = await countPdfPages(file);
+      onControl('pdf:set', { pdf: { type: 'pdf', name: file.name, dataUrl: reader.result, pageCount } });
     };
     reader.readAsDataURL(file);
   }
@@ -160,8 +162,9 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
                 aria-label="Jump to slide"
                 type="number"
                 min="1"
+                max={roomState.pdf?.pageCount || undefined}
                 value={roomState.pdf ? currentIndex + 1 : ''}
-                placeholder="No slides uploaded"
+                placeholder={roomState.pdf ? `1-${roomState.pdf.pageCount || ''}` : 'No slides uploaded'}
                 onChange={(event) => onControl('slide:set', { index: Math.max(0, Number(event.target.value) - 1) })}
                 disabled={!roomState.pdf}
               />
@@ -182,6 +185,17 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
       />
     </div>
   );
+}
+
+async function countPdfPages(file) {
+  try {
+    const buffer = await file.arrayBuffer();
+    const text = new TextDecoder('latin1').decode(buffer);
+    const matches = text.match(/\/Type\s*\/Page\b/g);
+    return Math.max(1, matches?.length || 1);
+  } catch {
+    return 1;
+  }
 }
 
 async function extractPptxSlides(file) {
@@ -297,21 +311,9 @@ function GameTab({ lessonData, roomState, activeQuestion, activeResponses, onCon
   return (
     <div className="game-tab">
       <section className="tool-panel presenter-game-controls">
-        <label className="control-only">
-          <select
-            aria-label="Scenario"
-            value={roomState.game?.scenarioId || 'localized-solid'}
-            onChange={(event) => onControl('game:scenario', { scenarioId: event.target.value })}
-          >
-            {lessonData.scenarios.map((scenario) => (
-              <option key={scenario.id} value={scenario.id}>{scenario.name}</option>
-            ))}
-          </select>
-        </label>
-        <button className="button primary game-time-button" onClick={() => onControl('game:start', { scenarioId: roomState.game?.scenarioId || 'localized-solid' })}>Start Game</button>
+        <button className="button primary game-time-button" onClick={() => onControl('game:start', { scenarioId: 'localized-solid' })}>Start Game</button>
         <button className="button secondary" onClick={() => onControl('game:pause')}>Pause Game</button>
         <button className="button secondary" onClick={() => onControl('game:reset')}>Reset Game</button>
-        <button className="button secondary" onClick={() => onControl('game:spawnCell')}>Spawn Cancer Cell</button>
         <button className="button secondary" onClick={() => onControl('game:mutation')}>Trigger Mutation Event</button>
         <button className="button secondary" onClick={() => onControl('game:energyQuestion')}>Send Energy Question</button>
         <div className="class-game-stats">

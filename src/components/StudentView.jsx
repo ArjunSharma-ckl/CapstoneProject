@@ -4,7 +4,8 @@ import GameArena from './GameArena.jsx';
 import ResultsScreen from './ResultsScreen.jsx';
 
 export default function StudentView({ roomCode, roomState, lessonData, socket }) {
-  const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId);
+  const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId)
+    || (roomState?.game?.currentQuestion?.id === roomState?.activeQuestionId ? roomState.game.currentQuestion : null);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
   const studentLessonData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : lessonData;
 

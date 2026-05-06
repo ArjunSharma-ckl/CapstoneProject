@@ -26,11 +26,12 @@ export default function App() {
   const socketRef = useRef(null);
   const [view, setView] = useState(searchParams.get('presentation') === '1' ? 'presentation' : 'landing');
   const [lessonData, setLessonData] = useState(readLessonData);
-  const [roomCode, setRoomCode] = useState(presentationRoom || lessonData.roomCode || 'BIO123');
+  const [roomCode, setRoomCode] = useState(presentationRoom || '');
   const [studentName, setStudentName] = useState('');
   const [roomState, setRoomState] = useState(null);
   const [connected, setConnected] = useState(false);
   const [devOpen, setDevOpen] = useState(false);
+  const [joinError, setJoinError] = useState('');
 
   useEffect(() => {
     const socket = io();
@@ -40,6 +41,10 @@ export default function App() {
     socket.on('room:state', (state) => {
       setRoomState(state);
       if (state?.roomCode) setRoomCode(state.roomCode);
+    });
+    socket.on('join:error', (payload) => {
+      setJoinError(payload?.message || 'Could not join room.');
+      setView('join');
     });
     return () => socket.disconnect();
   }, []);
@@ -68,18 +73,22 @@ export default function App() {
   }
 
   function createPresenterRoom(code = roomCode) {
-    const cleanCode = code.trim().toUpperCase() || 'BIO123';
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanCode) return;
     setRoomCode(cleanCode);
     setView('presenter');
     socketRef.current?.emit('room:create', { roomCode: cleanCode, lessonData });
   }
 
   function joinRoom({ code, name }) {
-    const cleanCode = code.trim().toUpperCase() || 'BIO123';
+    const cleanCode = code.trim().toUpperCase();
+    const cleanName = name.trim();
+    if (!cleanCode || !cleanName) return;
     setRoomCode(cleanCode);
-    setStudentName(name.trim() || 'Student');
+    setStudentName(cleanName);
+    setJoinError('');
     setView('student');
-    socketRef.current?.emit('room:join', { roomCode: cleanCode, name: name.trim() || 'Student' });
+    socketRef.current?.emit('room:join', { roomCode: cleanCode, name: cleanName });
   }
 
   function emitControl(action, payload = {}) {
@@ -91,7 +100,7 @@ export default function App() {
   }
 
   function returnHome() {
-    setRoomCode(lessonData.roomCode || 'BIO123');
+    setRoomCode('');
     setView('landing');
   }
 
@@ -117,6 +126,8 @@ export default function App() {
         <StudentJoin
           defaultRoomCode={roomCode}
           connected={connected}
+          joinError={joinError}
+          onClearError={() => setJoinError('')}
           onJoin={joinRoom}
           onBack={returnHome}
         />

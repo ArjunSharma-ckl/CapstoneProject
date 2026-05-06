@@ -12,14 +12,14 @@ export default function LandingPage({
             aria-label="Room code"
             value={roomCode}
             onChange={(event) => setRoomCode(event.target.value.toUpperCase())}
-            placeholder="BIO123"
+            placeholder="ENTER CODE HERE"
           />
         </label>
         <div className="home-actions">
-          <button className="button primary large" onClick={onStudent}>
+          <button className="button primary large" onClick={onStudent} disabled={!roomCode.trim()}>
             Join as Student
           </button>
-          <button className="button secondary large" onClick={onPresenter}>
+          <button className="button secondary large" onClick={onPresenter} disabled={!roomCode.trim()}>
             Presenter Login
           </button>
         </div>

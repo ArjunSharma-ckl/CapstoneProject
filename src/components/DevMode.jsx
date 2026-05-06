@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { defaultLessonData } from '../data/defaultLessonData.js';
 
 const PASSWORD = 'CapstonProjectA4';
-const tabs = ['Slides', 'Questions', 'Treatments', 'Game', 'Review', 'JSON'];
+const tabs = ['SLIDES', 'QUESTIONS', 'TREATMENTS', 'GAME', 'REVIEW', 'JSON'];
 const animationPresets = [
   { value: 'cell-division', label: 'Cell division pulse' },
   { value: 'radiation', label: 'Radiation beam' },
@@ -17,7 +17,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [draft, setDraft] = useState(() => structuredClone(lessonData));
-  const [activeTab, setActiveTab] = useState('Slides');
+  const [activeTab, setActiveTab] = useState('SLIDES');
   const [jsonText, setJsonText] = useState(() => JSON.stringify(lessonData, null, 2));
   const [importText, setImportText] = useState('');
   const sortedSlides = useMemo(() => [...(draft.slides || [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)), [draft.slides]);
@@ -126,7 +126,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
       setDraft(next);
       setJsonText(JSON.stringify(next, null, 2));
       setImportText('');
-      setActiveTab('Slides');
+      setActiveTab('SLIDES');
     } catch {
       setError('Import JSON could not be parsed.');
     }
@@ -169,7 +169,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
         <header className="dev-header">
           <div>
             <div className="eyebrow">Local content editor</div>
-            <h2>Dev/Admin Mode</h2>
+            <h2>EDIT</h2>
           </div>
           <div className="dev-actions">
             <button className="button primary" onClick={save}>Save changes</button>
@@ -181,7 +181,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
 
         {error && <div className="form-error inline">{error}</div>}
 
-        <nav className="tab-row" aria-label="Dev editor tabs">
+        <nav className="tab-row" aria-label="Editor tabs">
           {tabs.map((tab) => (
             <button key={tab} className={activeTab === tab ? 'active' : ''} onClick={() => setActiveTab(tab)}>
               {tab}
@@ -190,7 +190,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
         </nav>
 
         <div className="dev-body">
-          {activeTab === 'Slides' && (
+          {activeTab === 'SLIDES' && (
             <div className="editor-list">
               {sortedSlides.map((slide) => (
                 <article className="editor-item" key={slide.id}>
@@ -216,7 +216,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
             </div>
           )}
 
-          {activeTab === 'Questions' && (
+          {activeTab === 'QUESTIONS' && (
             <div className="editor-list">
               {draft.questions.map((question, index) => (
                 <article className="editor-item" key={question.id}>
@@ -241,7 +241,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
             </div>
           )}
 
-          {activeTab === 'Treatments' && (
+          {activeTab === 'TREATMENTS' && (
             <div className="editor-list">
               {draft.treatments.map((treatment) => (
                 <article className="editor-item" key={treatment.id}>
@@ -256,7 +256,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
             </div>
           )}
 
-          {activeTab === 'Game' && (
+          {activeTab === 'GAME' && (
             <div className="editor-list">
               <article className="editor-item">
                 <strong>Boss tuning</strong>
@@ -294,7 +294,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
             </div>
           )}
 
-          {activeTab === 'Review' && (
+          {activeTab === 'REVIEW' && (
             <div className="editor-list">
               <article className="editor-item">
                 <label>Why this matters<textarea value={draft.review.whyThisMatters} onChange={(event) => setField(['review', 'whyThisMatters'], event.target.value)} /></label>
