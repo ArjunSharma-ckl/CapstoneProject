@@ -6,7 +6,7 @@ import GameArena from './GameArena.jsx';
 import ResultsScreen from './ResultsScreen.jsx';
 import DevMode from './DevMode.jsx';
 
-const tabs = ['SLIDES', 'QUESTIONS', 'GAME', 'EDIT'];
+const TABS = ['SLIDES', 'QUESTIONS', 'STUDENTS', 'GAME', 'EDIT'];
 
 export default function PresenterDashboard({
   connected,
@@ -21,15 +21,15 @@ export default function PresenterDashboard({
   onResetLessonData
 }) {
   const [activeTab, setActiveTab] = useState('SLIDES');
+
   const uploadedSlides = roomState?.pdf?.type === 'pptx' ? roomState.pdf.slides : [];
   const currentIndex = roomState?.slideIndex || 0;
-  const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId)
-    || (roomState?.game?.currentQuestion?.id === roomState?.activeQuestionId ? roomState.game.currentQuestion : null);
+  const activeQuestion =
+    lessonData.questions.find((q) => q.id === roomState?.activeQuestionId) ||
+    (roomState?.game?.currentQuestion?.id === roomState?.activeQuestionId
+      ? roomState.game.currentQuestion
+      : null);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
-  const allResponses = Object.values(roomState?.responses || {}).flat();
-  const accuracy = allResponses.length
-    ? Math.round((allResponses.filter((response) => response.correct).length / allResponses.length) * 100)
-    : 0;
   const projectedData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : { ...lessonData, pdf: null };
 
   if (!roomState) {
@@ -38,9 +38,18 @@ export default function PresenterDashboard({
         <div className="setup-card">
           <button className="button ghost back-button" onClick={onBack}>Back</button>
           <label className="control-only">
-            <input aria-label="Room code" value={roomCode} onChange={(event) => setRoomCode(event.target.value.toUpperCase())} placeholder="ENTER CODE HERE" />
+            <input
+              aria-label="Room code"
+              value={roomCode}
+              onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+              placeholder="ENTER ROOM CODE HERE"
+            />
           </label>
-          <button className="button primary large" onClick={() => onCreateRoom(roomCode)} disabled={!connected || !roomCode.trim()}>
+          <button
+            className="button primary large"
+            onClick={() => onCreateRoom(roomCode)}
+            disabled={!connected || !roomCode.trim()}
+          >
             Create Room
           </button>
         </div>
@@ -49,10 +58,19 @@ export default function PresenterDashboard({
   }
 
   return (
-    <main className="presenter-dashboard simple-dashboard">
+    <main className="presenter-dashboard">
       <header className="dashboard-header">
+        <div className="dashboard-room-label">
+          Room: <strong>{roomState.roomCode}</strong>
+          {' '}&mdash;{' '}
+          <span className={`conn-dot ${connected ? 'online' : ''}`} />
+          {connected ? 'Live' : 'Disconnected'}
+        </div>
         <div className="header-actions">
-          <button className="button primary presentation-top-button" onClick={() => openPresentationView(roomState.roomCode)}>
+          <button
+            className="button primary"
+            onClick={() => openPresentationView(roomState.roomCode)}
+          >
             Open Presentation View
           </button>
           <button className="button ghost" onClick={onBack}>Exit</button>
@@ -60,8 +78,12 @@ export default function PresenterDashboard({
       </header>
 
       <nav className="dashboard-tabs" aria-label="Presenter dashboard tabs">
-        {tabs.map((tab) => (
-          <button key={tab} className={activeTab === tab ? 'active' : ''} onClick={() => setActiveTab(tab)}>
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            className={activeTab === tab ? 'active' : ''}
+            onClick={() => setActiveTab(tab)}
+          >
             {tab}
           </button>
         ))}
@@ -85,6 +107,15 @@ export default function PresenterDashboard({
             activeResponses={activeResponses}
             roomState={roomState}
             onControl={onControl}
+          />
+        )}
+
+        {activeTab === 'STUDENTS' && (
+          <StudentsTab
+            students={roomState.students || []}
+            gamePlayers={roomState.game?.players || {}}
+            activeQuestion={activeQuestion}
+            activeResponses={activeResponses}
           />
         )}
 
@@ -117,23 +148,16 @@ function openPresentationView(roomCode) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
+/* ── SLIDES TAB ──────────────────────────────────────────────────── */
 function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onControl }) {
   async function uploadPresentation(event) {
     const file = event.target.files?.[0];
     if (!file) return;
-
     if (file.name.toLowerCase().endsWith('.pptx')) {
       const slides = await extractPptxSlides(file);
-      onControl('pdf:set', {
-        pdf: {
-          type: 'pptx',
-          name: file.name,
-          slides
-        }
-      });
+      onControl('pdf:set', { pdf: { type: 'pptx', name: file.name, slides } });
       return;
     }
-
     const reader = new FileReader();
     reader.onload = async () => {
       const pageCount = await countPdfPages(file);
@@ -142,19 +166,32 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
     reader.readAsDataURL(file);
   }
 
+  const totalSlides = roomState?.pdf?.type === 'pptx'
+    ? (uploadedSlides?.length || 0)
+    : roomState?.pdf?.pageCount || lessonData?.slides?.length || 0;
+
   return (
     <div className="slides-tab">
       <section className="tool-panel">
         <div className="control-grid">
           <label className="button secondary file-button">
-            Upload PDF/PPTX
-            <input type="file" accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,.pptx" onChange={uploadPresentation} />
+            Upload PDF / PPTX
+            <input
+              type="file"
+              accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,.pptx"
+              onChange={uploadPresentation}
+            />
           </label>
+
           <label className="control-only">
-            {roomState.pdf?.type === 'pptx' && uploadedSlides?.length ? (
-              <select aria-label="Jump to slide" value={currentIndex} onChange={(event) => onControl('slide:set', { index: Number(event.target.value) })}>
-                {uploadedSlides.map((slide, index) => (
-                  <option key={slide.id} value={index}>{index + 1}. {slide.title || `Slide ${index + 1}`}</option>
+            {roomState?.pdf?.type === 'pptx' && uploadedSlides?.length ? (
+              <select
+                aria-label="Jump to slide"
+                value={currentIndex}
+                onChange={(e) => onControl('slide:set', { index: Number(e.target.value) })}
+              >
+                {uploadedSlides.map((slide, i) => (
+                  <option key={slide.id} value={i}>{i + 1}. {slide.title || `Slide ${i + 1}`}</option>
                 ))}
               </select>
             ) : (
@@ -162,11 +199,10 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
                 aria-label="Jump to slide"
                 type="number"
                 min="1"
-                max={roomState.pdf?.pageCount || undefined}
-                value={roomState.pdf ? currentIndex + 1 : ''}
-                placeholder={roomState.pdf ? `1-${roomState.pdf.pageCount || ''}` : 'No slides uploaded'}
-                onChange={(event) => onControl('slide:set', { index: Math.max(0, Number(event.target.value) - 1) })}
-                disabled={!roomState.pdf}
+                max={totalSlides || undefined}
+                value={totalSlides ? currentIndex + 1 : ''}
+                placeholder={totalSlides ? `1–${totalSlides}` : 'Slide number'}
+                onChange={(e) => onControl('slide:set', { index: Math.max(0, Number(e.target.value) - 1) })}
               />
             )}
           </label>
@@ -179,10 +215,7 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
         </div>
       </section>
 
-      <LessonViewer
-        lessonData={lessonData}
-        slideIndex={currentIndex}
-      />
+      <LessonViewer lessonData={lessonData} slideIndex={currentIndex} />
     </div>
   );
 }
@@ -201,28 +234,27 @@ async function countPdfPages(file) {
 async function extractPptxSlides(file) {
   const zip = await JSZip.loadAsync(await file.arrayBuffer());
   const slidePaths = Object.keys(zip.files)
-    .filter((path) => /^ppt\/slides\/slide\d+\.xml$/.test(path))
-    .sort((a, b) => Number(a.match(/slide(\d+)\.xml/)?.[1] || 0) - Number(b.match(/slide(\d+)\.xml/)?.[1] || 0));
-
+    .filter((p) => /^ppt\/slides\/slide\d+\.xml$/.test(p))
+    .sort((a, b) =>
+      Number(a.match(/slide(\d+)\.xml/)?.[1] || 0) - Number(b.match(/slide(\d+)\.xml/)?.[1] || 0)
+    );
   const parser = new DOMParser();
   const slides = [];
-  for (const [index, path] of slidePaths.entries()) {
-    const xml = await zip.files[path].async('text');
+  for (const [index, p] of slidePaths.entries()) {
+    const xml = await zip.files[p].async('text');
     const doc = parser.parseFromString(xml, 'application/xml');
     const text = [...doc.getElementsByTagName('a:t')]
-      .map((node) => node.textContent?.trim())
+      .map((n) => n.textContent?.trim())
       .filter(Boolean);
-    const uniqueLines = text.filter((line, lineIndex) => text.indexOf(line) === lineIndex);
-    slides.push({
-      id: `pptx-slide-${index + 1}`,
-      title: uniqueLines[0] || `Slide ${index + 1}`,
-      lines: uniqueLines.slice(1)
-    });
+    const unique = text.filter((line, i) => text.indexOf(line) === i);
+    slides.push({ id: `pptx-slide-${index + 1}`, title: unique[0] || `Slide ${index + 1}`, lines: unique.slice(1) });
   }
-
-  return slides.length ? slides : [{ id: 'pptx-slide-1', title: file.name, lines: ['No readable slide text found.'] }];
+  return slides.length
+    ? slides
+    : [{ id: 'pptx-slide-1', title: file.name, lines: ['No readable slide text found.'] }];
 }
 
+/* ── QUESTIONS TAB ───────────────────────────────────────────────── */
 function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, onControl }) {
   return (
     <div className="questions-tab">
@@ -233,10 +265,13 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
 
         <div className="question-list">
           {questions.map((question, index) => (
-            <article className={`question-row-card ${activeQuestion?.id === question.id ? 'active' : ''}`} key={question.id}>
+            <article
+              className={`question-row-card ${activeQuestion?.id === question.id ? 'active' : ''}`}
+              key={question.id}
+            >
               <div>
                 <strong>{index + 1}. {question.prompt}</strong>
-                <span>{question.concept}</span>
+                <span className="question-concept">{question.concept}</span>
               </div>
               <div className="question-actions">
                 <button className="button primary" onClick={() => onControl('question:launch', { questionId: question.id })}>Send Question</button>
@@ -255,7 +290,11 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
           responses={activeResponses}
           mode="presenter"
         />
-        <ResponseSummary question={activeQuestion} responses={activeResponses} showResults={roomState.showResults} />
+        <ResponseSummary
+          question={activeQuestion}
+          responses={activeResponses}
+          showResults={roomState.showResults}
+        />
       </section>
     </div>
   );
@@ -264,11 +303,11 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
 function ResponseSummary({ question, responses, showResults }) {
   if (!question) return <p className="muted">No question is active.</p>;
   const total = responses.length;
-  const correct = responses.filter((response) => response.correct).length;
+  const correct = responses.filter((r) => r.correct).length;
   const accuracy = total ? Math.round((correct / total) * 100) : 0;
   const distribution = question.choices?.map((choice) => ({
     ...choice,
-    count: responses.filter((response) => response.answerId === choice.id).length
+    count: responses.filter((r) => r.answerId === choice.id).length
   })) || [];
 
   return (
@@ -287,11 +326,11 @@ function ResponseSummary({ question, responses, showResults }) {
           ))}
         </div>
       )}
-      {responses.map((response) => (
-        <div className="response-row" key={response.studentId}>
-          <span>{response.studentName}</span>
-          <strong className={response.correct ? 'correct-text' : 'incorrect-text'}>
-            {response.correct ? 'Correct' : 'Review'}
+      {responses.map((r) => (
+        <div className="response-row" key={r.studentId}>
+          <span>{r.studentName}</span>
+          <strong className={r.correct ? 'correct-text' : 'incorrect-text'}>
+            {r.correct ? 'Correct' : 'Review'}
           </strong>
         </div>
       ))}
@@ -299,26 +338,116 @@ function ResponseSummary({ question, responses, showResults }) {
   );
 }
 
+/* ── STUDENTS TAB ────────────────────────────────────────────────── */
+function StudentsTab({ students, gamePlayers, activeQuestion, activeResponses }) {
+  const answeredIds = new Set(activeResponses.map((r) => r.studentId));
+
+  if (!students.length) {
+    return (
+      <div className="students-tab">
+        <section className="tool-panel">
+          <p className="muted">No students have joined yet.</p>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="students-tab">
+      <section className="tool-panel">
+        <table className="students-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Score</th>
+              <th>Energy</th>
+              <th>HP</th>
+              <th>Damage</th>
+              {activeQuestion && <th>Answered</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {students.map((student) => {
+              const player = gamePlayers[student.id];
+              return (
+                <tr key={student.id} className={student.connected ? '' : 'disconnected-row'}>
+                  <td>{student.name}</td>
+                  <td>{student.connected ? 'Connected' : 'Disconnected'}</td>
+                  <td>{student.score ?? 0}</td>
+                  <td>{player?.energy ?? 0}</td>
+                  <td>{player?.health ?? (player?.maxHealth ?? 100)}</td>
+                  <td>{player?.contribution ?? 0}</td>
+                  {activeQuestion && (
+                    <td className={answeredIds.has(student.id) ? 'correct-text' : 'muted'}>
+                      {answeredIds.has(student.id) ? 'Yes' : 'Waiting'}
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  );
+}
+
+/* ── GAME TAB ────────────────────────────────────────────────────── */
 function GameTab({ lessonData, roomState, activeQuestion, activeResponses, onControl }) {
+  const [scenarioId, setScenarioId] = useState('localized-solid');
+
   if (roomState.game?.status === 'ended') {
     return <ResultsScreen lessonData={lessonData} roomState={roomState} />;
   }
 
   const players = Object.values(roomState.game?.players || {});
-  const classEnergy = players.reduce((sum, player) => sum + (player.energy || 0), 0);
-  const classDamage = players.reduce((sum, player) => sum + (player.contribution || 0), 0);
+  const classEnergy = players.reduce((sum, p) => sum + (p.energy || 0), 0);
+  const classDamage = players.reduce((sum, p) => sum + (p.contribution || 0), 0);
 
   return (
     <div className="game-tab">
       <section className="tool-panel presenter-game-controls">
-        <button className="button primary game-time-button" onClick={() => onControl('game:start', { scenarioId: 'localized-solid' })}>Start Game</button>
-        <button className="button secondary" onClick={() => onControl('game:pause')}>Pause Game</button>
-        <button className="button secondary" onClick={() => onControl('game:reset')}>Reset Game</button>
-        <button className="button secondary" onClick={() => onControl('game:mutation')}>Trigger Mutation Event</button>
-        <button className="button secondary" onClick={() => onControl('game:energyQuestion')}>Send Energy Question</button>
+        <div className="game-scenario-row">
+          <label className="control-only">
+            <select
+              aria-label="Scenario"
+              value={scenarioId}
+              onChange={(e) => {
+                setScenarioId(e.target.value);
+                onControl('game:scenario', { scenarioId: e.target.value });
+              }}
+            >
+              <option value="localized-solid">Localized Solid Tumor</option>
+              <option value="leukemia">Leukemia / Blood Cancer</option>
+              <option value="metastatic">Metastatic Cancer</option>
+            </select>
+          </label>
+        </div>
+
+        <div className="button-row">
+          <button
+            className="button primary game-time-button"
+            onClick={() => onControl('game:start', { scenarioId })}
+          >
+            GAME TIME
+          </button>
+          <button className="button secondary" onClick={() => onControl('game:pause')}>
+            {roomState.game?.status === 'paused' ? 'Resume Game' : 'Pause Game'}
+          </button>
+          <button className="button secondary" onClick={() => onControl('game:reset')}>Reset Game</button>
+        </div>
+
+        <div className="button-row">
+          <button className="button secondary" onClick={() => onControl('game:mutation')}>Trigger Mutation Event</button>
+          <button className="button secondary" onClick={() => onControl('game:energyQuestion')}>Send Energy Question</button>
+          <button className="button secondary" onClick={() => onControl('game:spawnCell')}>Spawn Cancer Cell</button>
+        </div>
+
         <div className="class-game-stats">
-          <strong>{classEnergy}</strong><span>Class Energy</span>
-          <strong>{classDamage}</strong><span>Damage</span>
+          <div><strong>{classEnergy}</strong><span>Class Energy</span></div>
+          <div><strong>{classDamage}</strong><span>Total Damage</span></div>
+          <div><strong>{roomState.game?.totalHealth ?? '—'}</strong><span>Cancer HP Left</span></div>
         </div>
       </section>
 

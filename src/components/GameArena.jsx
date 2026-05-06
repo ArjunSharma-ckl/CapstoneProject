@@ -139,7 +139,7 @@ export default function GameArena({
       <header className="cell-battle-topbar">
         <div className="cell-health">
           <div className="health-row">
-            <strong>Cancer Health: {game.totalHealth} HP</strong>
+            <strong>Cancer Cell Health: {game.totalHealth} HP</strong>
             <span>{game.status === 'paused' ? 'Paused' : `Round ${game.round || 1}`}</span>
           </div>
           <div className="health-bar"><span style={{ width: `${healthPercent}%` }} /></div>

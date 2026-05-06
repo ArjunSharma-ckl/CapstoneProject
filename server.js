@@ -248,8 +248,8 @@ function healPlayer(room, player) {
   return true;
 }
 
-function cleanCode(code = 'BIO123') {
-  return String(code).trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8) || 'BIO123';
+function cleanCode(code = '') {
+  return String(code).trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
 }
 
 const blockedNameWords = [

@@ -1,38 +1,65 @@
 export default function LessonViewer({ lessonData, slideIndex = 0, compact = false }) {
   const uploaded = lessonData.pdf || null;
+  const slides = lessonData.slides || [];
 
-  if (!uploaded) {
-    return (
-      <section className={`lesson-viewer no-slides ${compact ? 'compact' : ''}`}>
-        <h2>No slides uploaded</h2>
-      </section>
-    );
-  }
+  // PDF / PPTX takes priority when uploaded
+  if (uploaded) {
+    if (uploaded.type === 'pptx') {
+      const slide = uploaded.slides?.[slideIndex] || uploaded.slides?.[0];
+      return (
+        <section className={`lesson-viewer uploaded-pptx ${compact ? 'compact' : ''}`}>
+          <div className="pptx-slide">
+            <div className="slide-kicker">Slide {slideIndex + 1} of {uploaded.slides?.length || 1}</div>
+            <h2>{slide?.title || uploaded.name}</h2>
+            {slide?.lines?.length ? (
+              <ul>
+                {slide.lines.map((line, index) => <li key={`${line}-${index}`}>{line}</li>)}
+              </ul>
+            ) : (
+              <p>No readable text found on this slide.</p>
+            )}
+          </div>
+        </section>
+      );
+    }
 
-  if (uploaded.type === 'pptx') {
-    const slide = uploaded.slides?.[slideIndex] || uploaded.slides?.[0];
     return (
-      <section className={`lesson-viewer uploaded-pptx ${compact ? 'compact' : ''}`}>
-        <div className="pptx-slide">
-          <div className="slide-kicker">PPTX slide {slideIndex + 1} of {uploaded.slides?.length || 1}</div>
-          <h2>{slide?.title || uploaded.name}</h2>
-          {slide?.lines?.length ? (
-            <ul>
-              {slide.lines.map((line, index) => <li key={`${line}-${index}`}>{line}</li>)}
-            </ul>
-          ) : (
-            <p>No readable text found on this slide.</p>
-          )}
+      <section className={`lesson-viewer uploaded-pdf ${compact ? 'compact' : ''}`}>
+        <div className="pdf-slide-frame">
+          <iframe
+            title={uploaded.name || 'Uploaded presentation'}
+            src={`${uploaded.dataUrl}#page=${slideIndex + 1}&toolbar=0&navpanes=0`}
+          />
         </div>
       </section>
     );
   }
 
+  // Built-in slides
+  if (slides.length > 0) {
+    const sorted = [...slides].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const slide = sorted[Math.min(slideIndex, sorted.length - 1)];
+    if (!slide) {
+      return (
+        <section className={`lesson-viewer no-slides ${compact ? 'compact' : ''}`}>
+          <h2>No slide at this index.</h2>
+        </section>
+      );
+    }
+    return (
+      <section className={`lesson-viewer builtin-slide ${compact ? 'compact' : ''}`}>
+        <div className="slide-kicker">Slide {slideIndex + 1} of {sorted.length}</div>
+        <h2 className="slide-title">{slide.title}</h2>
+        {slide.focus && <div className="slide-focus">{slide.focus}</div>}
+        <p className="slide-description">{slide.description}</p>
+      </section>
+    );
+  }
+
   return (
-    <section className={`lesson-viewer uploaded-pdf ${compact ? 'compact' : ''}`}>
-      <div className="pdf-slide-frame">
-        <iframe title={uploaded.name || 'Uploaded presentation PDF'} src={`${uploaded.dataUrl}#page=${slideIndex + 1}&toolbar=0&navpanes=0`} />
-      </div>
+    <section className={`lesson-viewer no-slides ${compact ? 'compact' : ''}`}>
+      <h2>No slides loaded.</h2>
+      <p>Upload a PDF or PPTX, or add slides in the Edit tab.</p>
     </section>
   );
 }
