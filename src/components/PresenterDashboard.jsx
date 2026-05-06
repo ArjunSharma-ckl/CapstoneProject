@@ -229,7 +229,6 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
         <div className="button-row slide-buttons">
           <button className="button secondary" onClick={() => onControl('slide:previous')}>Previous Slide</button>
           <button className="button secondary" onClick={() => onControl('slide:next')}>Next Slide</button>
-          <button className="button primary" onClick={() => onControl('slide:send')}>Send to Student Screens</button>
         </div>
       </section>
 

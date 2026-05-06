@@ -23,6 +23,8 @@ export default function PasswordGate({ title = 'Presenter Login', onSuccess, onC
         <h1>{title}</h1>
         <label className="control-only">
           <input
+            id="password-input"
+            name="password"
             aria-label="Password"
             type="password"
             value={password}
