@@ -68,6 +68,14 @@ export default function PresenterDashboard({
         </div>
         <div className="header-actions">
           <button
+            className="button secondary"
+            onClick={() => onControl('session:reset')}
+            disabled={!connected}
+            title="Resets slides, questions, scores, and game (keeps students in the room)."
+          >
+            Reset Room
+          </button>
+          <button
             className="button primary"
             onClick={() => openPresentationView(roomState.roomCode)}
           >
@@ -116,6 +124,7 @@ export default function PresenterDashboard({
             gamePlayers={roomState.game?.players || {}}
             activeQuestion={activeQuestion}
             activeResponses={activeResponses}
+            onControl={onControl}
           />
         )}
 
@@ -173,6 +182,15 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
   return (
     <div className="slides-tab">
       <section className="tool-panel">
+        <div className="button-row tight">
+          <button className="button secondary" onClick={() => onControl('slide:set', { index: 0 })}>
+            Reset Slides
+          </button>
+          <button className="button secondary" onClick={() => onControl('question:clear')}>
+            Clear Question
+          </button>
+        </div>
+
         <div className="control-grid">
           <label className="button secondary file-button">
             Upload PDF / PPTX
@@ -260,7 +278,10 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
     <div className="questions-tab">
       <section className="tool-panel">
         <div className="panel-title-row">
-          <button className="button secondary" onClick={() => onControl('question:clear')}>Clear Question</button>
+          <div className="button-row tight">
+            <button className="button secondary" onClick={() => onControl('question:clear')}>Clear Question</button>
+            <button className="button secondary" onClick={() => onControl('session:reset')}>Reset Room</button>
+          </div>
         </div>
 
         <div className="question-list">
@@ -355,6 +376,11 @@ function StudentsTab({ students, gamePlayers, activeQuestion, activeResponses })
   return (
     <div className="students-tab">
       <section className="tool-panel">
+        <div className="button-row tight">
+          <button className="button secondary" onClick={() => onControl?.('session:reset')}>
+            Reset Room
+          </button>
+        </div>
         <table className="students-table">
           <thead>
             <tr>
@@ -408,6 +434,12 @@ function GameTab({ lessonData, roomState, activeQuestion, activeResponses, onCon
   return (
     <div className="game-tab">
       <section className="tool-panel presenter-game-controls">
+        <div className="button-row tight">
+          <button className="button secondary" onClick={() => onControl('session:reset')}>
+            Reset Room
+          </button>
+        </div>
+
         <div className="game-scenario-row">
           <label className="control-only">
             <select
