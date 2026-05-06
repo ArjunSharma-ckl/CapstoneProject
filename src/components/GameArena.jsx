@@ -35,6 +35,7 @@ export default function GameArena({
   const players = Object.values(game?.players || {});
   const currentPlayer = socket?.id ? game?.players?.[socket.id] : null;
   const healthPercent = Math.max(0, Math.round(((game?.totalHealth ?? 0) / (game?.maxHealth || 1000)) * 100));
+  const minimalHud = Boolean(readOnly);
 
   useEffect(() => {
     if (presenter || !socket || !currentPlayer || game?.status !== 'running') return undefined;
@@ -136,15 +137,15 @@ export default function GameArena({
 
   return (
     <section className="cell-battle">
-      <header className="cell-battle-topbar">
+      <header className={`cell-battle-topbar ${minimalHud ? 'topbar-light' : ''}`}>
         <div className="cell-health">
           <div className="health-row">
             <strong>Cancer Cell Health: {game.totalHealth} HP</strong>
             <span>{game.status === 'paused' ? 'Paused' : `Round ${game.round || 1}`}</span>
           </div>
-          <div className="health-bar"><span style={{ width: `${healthPercent}%` }} /></div>
+          {!minimalHud && <div className="health-bar"><span style={{ width: `${healthPercent}%` }} /></div>}
         </div>
-        {game.currentMutation && <div className="mutation-chip">{game.currentMutation.title}</div>}
+        {!minimalHud && game.currentMutation && <div className="mutation-chip">{game.currentMutation.title}</div>}
         {!presenter && (
           <>
             <div className="energy-chip">Energy {currentPlayer?.energy || 0}</div>
@@ -186,13 +187,13 @@ export default function GameArena({
             </>
           )}
 
-          {(presenter || readOnly) && (
+          {presenter && (
             <div className="class-energy-panel">
               <ContributionTable players={players} />
             </div>
           )}
 
-          <AttackLog log={game.log} />
+          {!minimalHud && <AttackLog log={game.log} />}
         </aside>
       </div>
     </section>
