@@ -4,7 +4,7 @@ import ResultsScreen from './ResultsScreen.jsx';
 
 export default function PresentationView({ roomCode, roomState, lessonData, socket }) {
   const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId)
-    || (roomState?.game?.currentQuestion?.id === roomState?.activeQuestionId ? roomState.game.currentQuestion : null);
+    || (roomState?.game?.currentQuestion?.id === roomState?.activeQuestionId ? roomState?.game?.currentQuestion : null);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
   const projectedData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : lessonData;
   const connectedStudents = roomState?.students?.filter((student) => student.connected) || [];

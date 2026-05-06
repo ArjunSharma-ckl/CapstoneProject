@@ -27,7 +27,7 @@ export default function PresenterDashboard({
   const activeQuestion =
     lessonData.questions.find((q) => q.id === roomState?.activeQuestionId) ||
     (roomState?.game?.currentQuestion?.id === roomState?.activeQuestionId
-      ? roomState.game.currentQuestion
+      ? roomState?.game?.currentQuestion
       : null);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
   const projectedData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : { ...lessonData, pdf: null };
