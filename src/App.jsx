@@ -99,18 +99,15 @@ export default function App() {
     <div className="app-shell">
       {view === 'landing' && (
         <LandingPage
-          lessonData={lessonData}
           roomCode={roomCode}
           setRoomCode={setRoomCode}
           onPresenter={() => setView('presenterLogin')}
           onStudent={() => setView('join')}
-          onDev={() => setDevOpen(true)}
         />
       )}
 
       {view === 'presenterLogin' && (
         <PasswordGate
-          lessonData={lessonData}
           onSuccess={() => createPresenterRoom(roomCode)}
           onCancel={returnHome}
         />
@@ -120,7 +117,6 @@ export default function App() {
         <StudentJoin
           defaultRoomCode={roomCode}
           connected={connected}
-          lessonData={lessonData}
           onJoin={joinRoom}
           onBack={returnHome}
         />
@@ -158,6 +154,7 @@ export default function App() {
           roomCode={roomCode}
           roomState={roomState}
           lessonData={activeLessonData}
+          socket={socketRef.current}
         />
       )}
 

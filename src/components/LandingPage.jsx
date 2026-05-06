@@ -1,21 +1,15 @@
 export default function LandingPage({
-  lessonData,
   roomCode,
   setRoomCode,
   onPresenter,
-  onStudent,
-  onDev
+  onStudent
 }) {
   return (
     <main className="home-page">
       <section className="home-panel">
-        <div className="home-heading">
-          <h1>Cancer Treatments Interactive Lesson</h1>
-          <p>Advanced Biology Capstone</p>
-        </div>
-        <label className="room-code-field">
-          Room Code
+        <label className="room-code-field control-only">
           <input
+            aria-label="Room code"
             value={roomCode}
             onChange={(event) => setRoomCode(event.target.value.toUpperCase())}
             placeholder="BIO123"
@@ -30,10 +24,6 @@ export default function LandingPage({
           </button>
         </div>
       </section>
-      <footer className="app-footer">
-        <span>{lessonData.footerDisclaimer}</span>
-        <button className="dev-link" onClick={onDev}>Dev</button>
-      </footer>
     </main>
   );
 }

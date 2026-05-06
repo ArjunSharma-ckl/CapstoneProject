@@ -260,7 +260,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
             <div className="editor-list">
               <article className="editor-item">
                 <strong>Boss tuning</strong>
-                <label>Boss health<input type="number" value={draft.gameSettings.bossHealth} onChange={(event) => setField(['gameSettings', 'bossHealth'], Number(event.target.value))} /></label>
+                <label>Cancer health<input type="number" value={draft.gameSettings.bossHealth} onChange={(event) => setField(['gameSettings', 'bossHealth'], Number(event.target.value))} /></label>
                 <label>Round limit<input type="number" value={draft.gameSettings.roundsLimit} onChange={(event) => setField(['gameSettings', 'roundsLimit'], Number(event.target.value))} /></label>
                 <label>Fast answer ms<input type="number" value={draft.gameSettings.fastAnswerMs} onChange={(event) => setField(['gameSettings', 'fastAnswerMs'], Number(event.target.value))} /></label>
               </article>
@@ -297,7 +297,6 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
           {activeTab === 'Review' && (
             <div className="editor-list">
               <article className="editor-item">
-                <label>Footer disclaimer<input value={draft.footerDisclaimer} onChange={(event) => setField(['footerDisclaimer'], event.target.value)} /></label>
                 <label>Why this matters<textarea value={draft.review.whyThisMatters} onChange={(event) => setField(['review', 'whyThisMatters'], event.target.value)} /></label>
                 <label>Missed concept intro<textarea value={draft.review.missedConceptIntro} onChange={(event) => setField(['review', 'missedConceptIntro'], event.target.value)} /></label>
                 <label>Handout placeholder<input value={draft.review.handoutPlaceholder} onChange={(event) => setField(['review', 'handoutPlaceholder'], event.target.value)} /></label>

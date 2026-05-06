@@ -1,5 +1,23 @@
-import TreatmentCard from './TreatmentCard.jsx';
+import { useEffect } from 'react';
 import QuestionCard from './QuestionCard.jsx';
+
+const zones = {
+  surgery: { x: 22, y: 28, radius: 16, label: 'Surgery Zone' },
+  chemotherapy: { x: 22, y: 72, radius: 16, label: 'Chemo Flow Zone' },
+  radiation: { x: 78, y: 28, radius: 16, label: 'Radiation Zone' },
+  immunotherapy: { x: 78, y: 72, radius: 16, label: 'Immune Zone' },
+  cart: { x: 50, y: 16, radius: 14, label: 'CAR T Marker Zone' },
+  pdt: { x: 50, y: 84, radius: 14, label: 'PDT Light Zone' }
+};
+
+const attacks = [
+  { id: 'surgery', name: 'Surgery Strike', cost: 100, zone: 'surgery' },
+  { id: 'chemotherapy', name: 'Chemotherapy Burst', cost: 75, zone: 'chemotherapy' },
+  { id: 'radiation', name: 'Radiation Beam', cost: 90, zone: 'radiation' },
+  { id: 'immunotherapy', name: 'Immune Boost', cost: 80, zone: 'immunotherapy' },
+  { id: 'cart', name: 'CAR T Lock-On', cost: 120, zone: 'cart' },
+  { id: 'pdt', name: 'PDT Flash', cost: 70, zone: 'pdt' }
+];
 
 export default function GameArena({
   lessonData,
@@ -8,167 +26,249 @@ export default function GameArena({
   activeResponses,
   presenter = false,
   onControl,
-  onAnswer
+  onAnswer,
+  socket,
+  roomCode,
+  readOnly = false
 }) {
   const game = roomState?.game;
-  const scenario = lessonData.scenarios.find((item) => item.id === game?.scenarioId) || lessonData.scenarios[0];
-  const mutation = lessonData.mutations.find((item) => item.id === game?.mutationId);
-  const healthPercent = Math.max(0, Math.round(((game?.bossHealth ?? 0) / (game?.maxHealth || 100)) * 100));
+  const players = Object.values(game?.players || {});
+  const currentPlayer = socket?.id ? game?.players?.[socket.id] : null;
+  const healthPercent = Math.max(0, Math.round(((game?.totalHealth ?? 0) / (game?.maxHealth || 1000)) * 100));
 
-  if (!game?.active) {
+  useEffect(() => {
+    if (presenter || !socket || !currentPlayer || game?.status !== 'running') return undefined;
+    const onKeyDown = (event) => {
+      const step = event.shiftKey ? 6 : 3;
+      const moves = {
+        ArrowUp: [0, -step],
+        w: [0, -step],
+        W: [0, -step],
+        ArrowDown: [0, step],
+        s: [0, step],
+        S: [0, step],
+        ArrowLeft: [-step, 0],
+        a: [-step, 0],
+        A: [-step, 0],
+        ArrowRight: [step, 0],
+        d: [step, 0],
+        D: [step, 0]
+      };
+      const move = moves[event.key];
+      if (!move) return;
+      event.preventDefault();
+      movePlayer(move[0], move[1]);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [presenter, socket, currentPlayer?.x, currentPlayer?.y, game?.status]);
+
+  function movePlayer(dx, dy) {
+    if (!socket || !currentPlayer) return;
+    socket.emit('game:move', {
+      roomCode,
+      x: clamp(currentPlayer.x + dx, 3, 97),
+      y: clamp(currentPlayer.y + dy, 5, 95)
+    });
+  }
+
+  function attack(attackId) {
+    if (!socket || !currentPlayer) return;
+    const liveCells = (game?.cells || []).filter((cell) => cell.health > 0);
+    const closest = liveCells.sort((a, b) => distance(currentPlayer, a) - distance(currentPlayer, b))[0];
+    socket.emit('game:attack', { roomCode, attackId, cellId: closest?.id });
+  }
+
+  if (!game || game.status === 'lobby') {
     return (
-      <section className="game-ready">
-        <div>
-          <div className="eyebrow">Final cooperative game</div>
-          <h2>{lessonData.gameSettings.title}</h2>
-          <p>Start the game when the class is ready. Students earn treatment charges by answering biology questions.</p>
+      <section className="cell-battle lobby-screen">
+        <div className="lobby-header">
+          <strong>Treatment Team: Cell Battle</strong>
+          <span>Room {roomState?.roomCode}</span>
         </div>
-        {presenter && (
-          <button className="button primary large" onClick={() => onControl('game:start', { scenarioId: scenario.id })}>
-            Start Final Game
+        <div className="lobby-list">
+          {roomState?.students?.length ? roomState.students.map((student, index) => (
+            <div className="lobby-player" key={student.id}>
+              <span className="capsule-dot" style={{ background: playerColor(index) }} />
+              <span>{student.name}</span>
+            </div>
+          )) : <span>No players joined yet.</span>}
+        </div>
+        {presenter && onControl && !readOnly ? (
+          <button className="button primary cell-battle-start" onClick={() => onControl('game:start', { scenarioId: game?.scenarioId || 'localized-solid' })}>
+            Start Game
           </button>
+        ) : (
+          <div className="lobby-waiting">Waiting for presenter to start...</div>
         )}
       </section>
     );
   }
 
+  if (game.status === 'ended') {
+    return (
+      <section className="cell-battle ended-screen">
+        <h2>Cancer defeated!</h2>
+        <ContributionTable players={players} />
+      </section>
+    );
+  }
+
   return (
-    <section className="game-arena">
-      <div className="game-topbar">
-        <div className="health-block">
+    <section className="cell-battle">
+      <header className="cell-battle-topbar">
+        <div className="cell-health">
           <div className="health-row">
-            <strong>Cancer health</strong>
-            <span>{game.bossHealth}/{game.maxHealth}</span>
+            <strong>Cancer Cell Health: {game.totalHealth} HP</strong>
+            <span>{game.status === 'paused' ? 'Paused' : `Round ${game.round || 1}`}</span>
           </div>
-          <div className="health-bar" aria-label="Cancer health">
-            <span style={{ width: `${healthPercent}%` }} />
-          </div>
+          <div className="health-bar"><span style={{ width: `${healthPercent}%` }} /></div>
         </div>
-        <span className="badge">{scenario.badge}</span>
-        <span className="badge">Round {game.round}</span>
-        <span className="badge combo">Class Combo {game.streak}</span>
-        <span className="badge charges">{game.charges} charges</span>
-      </div>
+        {game.currentMutation && <div className="mutation-chip">{game.currentMutation.title}</div>}
+        {!presenter && <div className="energy-chip">Energy {currentPlayer?.energy || 0}</div>}
+      </header>
 
-      {mutation && (
-        <div className="mutation-alert">
-          <strong>{mutation.title}</strong>
-          <span>{mutation.text}</span>
-        </div>
-      )}
+      <div className="cell-battle-layout">
+        <GameMap game={game} players={players} />
 
-      <div className="game-layout">
-        <div className="battlefield-panel">
-          <div className="battlefield-header">
-            <div>
-              <h3>Patient battlefield</h3>
-              <p>{scenario.description}</p>
+        <aside className="cell-battle-side">
+          {activeQuestion && !presenter && (
+            <div className="game-question-panel">
+              <QuestionCard
+                question={activeQuestion}
+                revealAnswers={roomState.revealAnswers}
+                responses={activeResponses}
+                mode="student"
+                onAnswer={onAnswer}
+              />
             </div>
-          </div>
-          <Battlefield healthPercent={healthPercent} mutation={mutation} />
-          <div className="attack-log">
-            {game.log.length === 0 ? (
-              <span>No attacks yet. Earn charges, then choose a treatment card.</span>
-            ) : (
-              game.log.map((entry) => (
-                <div key={entry.id} className="log-entry">
-                  <strong>-{entry.damage}</strong>
-                  <span>{entry.message}</span>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+          )}
 
-        <aside className="resource-panel">
-          <div className="panel-heading">
-            <h3>Treatment cards</h3>
-            <p>Choose the card that fits the scenario biology.</p>
-          </div>
-          <div className="treatment-list">
-            {lessonData.treatments.map((treatment) => {
-              const base = scenario.effectiveness?.[treatment.id] ?? 1;
-              const modifier = mutation?.modifiers?.[treatment.id] ?? 1;
-              return (
-                <TreatmentCard
-                  key={treatment.id}
-                  treatment={treatment}
-                  effectiveness={base * modifier}
-                  disabled={!presenter || game.charges <= 0 || game.bossHealth <= 0}
-                  onUse={presenter ? (id) => onControl('game:attack', { treatmentId: id }) : null}
-                />
-              );
-            })}
-          </div>
+          {!presenter && !readOnly && (
+            <>
+              <AttackPanel player={currentPlayer} onAttack={attack} />
+              <MovePad onMove={movePlayer} disabled={game.status !== 'running'} />
+            </>
+          )}
+
+          {(presenter || readOnly) && (
+            <div className="class-energy-panel">
+              <ContributionTable players={players} />
+            </div>
+          )}
+
+          <AttackLog log={game.log} />
         </aside>
-      </div>
-
-      <div className="game-question-row">
-        <QuestionCard
-          question={activeQuestion}
-          revealAnswers={roomState.revealAnswers}
-          responses={activeResponses}
-          mode={presenter ? 'presenter' : 'student'}
-          onAnswer={onAnswer}
-        />
-        {presenter && (
-          <div className="game-controls">
-            <button className="button secondary" onClick={() => launchGameQuestion(lessonData, roomState, onControl)}>
-              Launch Game Question
-            </button>
-            <button className="button secondary" onClick={() => onControl('question:reveal')}>
-              Reveal Answer
-            </button>
-            <button className="button secondary" onClick={() => onControl('game:nextRound')}>
-              Next Round / Mutation Check
-            </button>
-            <label>
-              Scenario
-              <select value={scenario.id} onChange={(event) => onControl('game:scenario', { scenarioId: event.target.value })}>
-                {lessonData.scenarios.map((item) => (
-                  <option key={item.id} value={item.id}>{item.name}</option>
-                ))}
-              </select>
-            </label>
-          </div>
-        )}
       </div>
     </section>
   );
 }
 
-function launchGameQuestion(lessonData, roomState, onControl) {
-  const index = (roomState.game.round + Object.keys(roomState.responses || {}).length) % lessonData.questions.length;
-  const question = lessonData.questions[index];
-  if (question) onControl('question:launch', { questionId: question.id });
-}
-
-function Battlefield({ healthPercent, mutation }) {
+function GameMap({ game, players }) {
   return (
-    <div className="battlefield">
-      <svg viewBox="0 0 620 360" aria-label="Cancer boss inside patient">
-        <rect x="32" y="36" width="556" height="284" rx="42" className="patient-zone" />
-        <path className="vessel-path" d="M78 240 C178 158, 284 282, 410 184 S540 156, 572 224" />
-        <g className={mutation ? 'boss mutated' : 'boss'} style={{ transformOrigin: '310px 178px', opacity: 0.55 + healthPercent / 220 }}>
-          <circle cx="310" cy="178" r="58" />
-          <circle cx="272" cy="140" r="24" />
-          <circle cx="360" cy="142" r="20" />
-          <circle cx="348" cy="222" r="24" />
-          <path d="M278 178 C298 154, 326 202, 350 176 M278 194 C300 218, 326 158, 350 176" />
-        </g>
-        <g className="team-cells">
-          <circle cx="128" cy="120" r="16" />
-          <circle cx="458" cy="102" r="15" />
-          <circle cx="478" cy="260" r="17" />
-          <path d="M146 122 L248 160 M446 108 L370 150 M462 250 L365 212" />
-        </g>
-        {mutation && (
-          <g className="mutation-tag">
-            <path d="M404 58 h132 l18 18 v42 h-150 z" />
-            <text x="422" y="88">{mutation.title}</text>
-          </g>
-        )}
-      </svg>
+    <div className="cell-map" aria-label="Treatment Team map">
+      <div className="map-grid" />
+      {Object.entries(zones).map(([id, zone]) => (
+        <div
+          key={id}
+          className={`treatment-zone zone-${id}`}
+          style={{ left: `${zone.x}%`, top: `${zone.y}%`, width: `${zone.radius * 2}%`, height: `${zone.radius * 2}%` }}
+        >
+          <span>{zone.label}</span>
+        </div>
+      ))}
+      {game.cells.map((cell) => <CancerCell key={cell.id} cell={cell} />)}
+      {players.map((player) => <PlayerCapsule key={player.id} player={player} />)}
     </div>
   );
+}
+
+function PlayerCapsule({ player }) {
+  return (
+    <div className="player-capsule" style={{ left: `${player.x}%`, top: `${player.y}%`, borderColor: player.color }}>
+      <span>{player.name}</span>
+      <strong>{player.energy}</strong>
+    </div>
+  );
+}
+
+function CancerCell({ cell }) {
+  const percent = Math.max(0, Math.round((cell.health / cell.maxHealth) * 100));
+  return (
+    <div className={`map-cancer-cell ${cell.health <= 0 ? 'defeated' : ''}`} style={{ left: `${cell.x}%`, top: `${cell.y}%` }}>
+      <div className="cancer-core">{cell.health}</div>
+      <span>{cell.label}</span>
+      <div className="cell-mini-bar"><b style={{ width: `${percent}%` }} /></div>
+    </div>
+  );
+}
+
+function AttackPanel({ player, onAttack }) {
+  return (
+    <div className="attack-panel">
+      {attacks.map((attack) => (
+        <button
+          key={attack.id}
+          className="attack-button"
+          disabled={!player || player.energy < attack.cost}
+          onClick={() => onAttack(attack.id)}
+        >
+          <span>{attack.name}</span>
+          <strong>{attack.cost} Energy</strong>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function MovePad({ onMove, disabled }) {
+  return (
+    <div className="move-pad">
+      <button disabled={disabled} onClick={() => onMove(0, -4)}>Up</button>
+      <button disabled={disabled} onClick={() => onMove(-4, 0)}>Left</button>
+      <button disabled={disabled} onClick={() => onMove(4, 0)}>Right</button>
+      <button disabled={disabled} onClick={() => onMove(0, 4)}>Down</button>
+    </div>
+  );
+}
+
+function ContributionTable({ players }) {
+  const totalEnergy = players.reduce((sum, player) => sum + (player.energy || 0), 0);
+  const totalDamage = players.reduce((sum, player) => sum + (player.contribution || 0), 0);
+  return (
+    <div className="contribution-table">
+      <div><strong>{totalEnergy}</strong><span>Class Energy</span></div>
+      <div><strong>{totalDamage}</strong><span>Damage</span></div>
+      {players.map((player) => (
+        <div className="contribution-row" key={player.id}>
+          <span>{player.name}</span>
+          <b>{player.energy} E</b>
+          <b>{player.contribution || 0} dmg</b>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AttackLog({ log = [] }) {
+  return (
+    <div className="cell-battle-log">
+      {log.length ? log.slice(0, 4).map((entry) => (
+        <div key={entry.id}>{entry.message}</div>
+      )) : <div>No treatment attacks yet.</div>}
+    </div>
+  );
+}
+
+function playerColor(index) {
+  const colors = ['#0d5f57', '#246f8f', '#b45f06', '#7b4f9d', '#28724f', '#9b3f3f'];
+  return colors[index % colors.length];
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, Number(value) || 0));
+}
+
+function distance(a, b) {
+  return Math.hypot((a.x || 0) - (b.x || 0), (a.y || 0) - (b.y || 0));
 }

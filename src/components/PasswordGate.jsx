@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 const PASSWORD = 'CapstonProjectA4';
 
-export default function PasswordGate({ lessonData, title = 'Presenter Login', onSuccess, onCancel }) {
+export default function PasswordGate({ title = 'Presenter Login', onSuccess, onCancel }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -21,20 +21,19 @@ export default function PasswordGate({ lessonData, title = 'Presenter Login', on
       <form className="login-panel" onSubmit={submit}>
         <button type="button" className="button ghost back-button" onClick={onCancel}>Back</button>
         <h1>{title}</h1>
-        <p>Presenter controls are locked so students only see the synced lesson view.</p>
-        <label>
-          Password
+        <label className="control-only">
           <input
+            aria-label="Password"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            placeholder="Password"
             autoFocus
           />
         </label>
         {error && <div className="form-error">{error}</div>}
         <button className="button primary large" type="submit">Open Dashboard</button>
       </form>
-      <footer className="app-footer">{lessonData?.footerDisclaimer}</footer>
     </main>
   );
 }

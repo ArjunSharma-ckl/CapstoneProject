@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import JSZip from 'jszip';
 import LessonViewer from './LessonViewer.jsx';
 import QuestionCard from './QuestionCard.jsx';
 import GameArena from './GameArena.jsx';
 import ResultsScreen from './ResultsScreen.jsx';
 import DevMode from './DevMode.jsx';
 
-const tabs = ['Slides', 'Questions', 'Students', 'Game', 'Dev/Edit Content'];
+const tabs = ['SLIDES', 'QUESTIONS', 'GAME', 'EDIT'];
 
 export default function PresenterDashboard({
   connected,
@@ -19,31 +20,26 @@ export default function PresenterDashboard({
   onSaveLessonData,
   onResetLessonData
 }) {
-  const [activeTab, setActiveTab] = useState('Slides');
-  const slides = [...(lessonData.slides || [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const [activeTab, setActiveTab] = useState('SLIDES');
+  const uploadedSlides = roomState?.pdf?.type === 'pptx' ? roomState.pdf.slides : [];
   const currentIndex = roomState?.slideIndex || 0;
-  const currentSlide = slides[currentIndex] || slides[0];
   const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
   const allResponses = Object.values(roomState?.responses || {}).flat();
   const accuracy = allResponses.length
     ? Math.round((allResponses.filter((response) => response.correct).length / allResponses.length) * 100)
     : 0;
-  const projectedData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : lessonData;
+  const projectedData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : { ...lessonData, pdf: null };
 
   if (!roomState) {
     return (
       <main className="presenter-setup">
         <div className="setup-card">
           <button className="button ghost back-button" onClick={onBack}>Back</button>
-          <div className="eyebrow">Presenter Dashboard</div>
-          <h1>Create classroom room</h1>
-          <p>Students join this code. The projected presentation view can open after the room is created.</p>
-          <label>
-            Room code
-            <input value={roomCode} onChange={(event) => setRoomCode(event.target.value.toUpperCase())} placeholder="BIO123" />
+          <label className="control-only">
+            <input aria-label="Room code" value={roomCode} onChange={(event) => setRoomCode(event.target.value.toUpperCase())} placeholder="BIO123" />
           </label>
-          <button className="button primary large" onClick={() => onCreateRoom(roomCode)} disabled={!connected}>
+          <button className="button primary large" onClick={() => onCreateRoom(roomCode)} disabled={!connected || !roomCode.trim()}>
             Create Room
           </button>
         </div>
@@ -54,12 +50,10 @@ export default function PresenterDashboard({
   return (
     <main className="presenter-dashboard simple-dashboard">
       <header className="dashboard-header">
-        <div>
-          <h1>Presenter Dashboard</h1>
-          <p>Room {roomState.roomCode}</p>
-        </div>
         <div className="header-actions">
-          <span className="room-pill">{connected ? 'Connected' : 'Reconnecting'}</span>
+          <button className="button primary presentation-top-button" onClick={() => openPresentationView(roomState.roomCode)}>
+            Open Presentation View
+          </button>
           <button className="button ghost" onClick={onBack}>Exit</button>
         </div>
       </header>
@@ -73,10 +67,9 @@ export default function PresenterDashboard({
       </nav>
 
       <section className="tab-panel">
-        {activeTab === 'Slides' && (
+        {activeTab === 'SLIDES' && (
           <SlidesTab
-            slides={slides}
-            currentSlide={currentSlide}
+            uploadedSlides={uploadedSlides}
             currentIndex={currentIndex}
             roomState={roomState}
             lessonData={projectedData}
@@ -84,7 +77,7 @@ export default function PresenterDashboard({
           />
         )}
 
-        {activeTab === 'Questions' && (
+        {activeTab === 'QUESTIONS' && (
           <QuestionsTab
             questions={lessonData.questions}
             activeQuestion={activeQuestion}
@@ -94,16 +87,7 @@ export default function PresenterDashboard({
           />
         )}
 
-        {activeTab === 'Students' && (
-          <StudentsTab
-            students={roomState.students}
-            activeResponses={activeResponses}
-            accuracy={accuracy}
-            charges={roomState.game?.charges || 0}
-          />
-        )}
-
-        {activeTab === 'Game' && (
+        {activeTab === 'GAME' && (
           <GameTab
             lessonData={lessonData}
             roomState={roomState}
@@ -113,7 +97,7 @@ export default function PresenterDashboard({
           />
         )}
 
-        {activeTab === 'Dev/Edit Content' && (
+        {activeTab === 'EDIT' && (
           <DevMode
             lessonData={lessonData}
             onSave={onSaveLessonData}
@@ -123,24 +107,35 @@ export default function PresenterDashboard({
           />
         )}
       </section>
-
-      <footer className="app-footer">{lessonData.footerDisclaimer}</footer>
     </main>
   );
 }
 
-function SlidesTab({ slides, currentSlide, currentIndex, roomState, lessonData, onControl }) {
-  function openPresentationView() {
-    const url = `${window.location.origin}${window.location.pathname}?presentation=1&room=${roomState.roomCode}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }
+function openPresentationView(roomCode) {
+  const url = `${window.location.origin}${window.location.pathname}?presentation=1&room=${roomCode}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
 
-  function uploadPdf(event) {
+function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onControl }) {
+  async function uploadPresentation(event) {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (file.name.toLowerCase().endsWith('.pptx')) {
+      const slides = await extractPptxSlides(file);
+      onControl('pdf:set', {
+        pdf: {
+          type: 'pptx',
+          name: file.name,
+          slides
+        }
+      });
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
-      onControl('pdf:set', { pdf: { name: file.name, dataUrl: reader.result } });
+      onControl('pdf:set', { pdf: { type: 'pdf', name: file.name, dataUrl: reader.result } });
     };
     reader.readAsDataURL(file);
   }
@@ -148,43 +143,35 @@ function SlidesTab({ slides, currentSlide, currentIndex, roomState, lessonData, 
   return (
     <div className="slides-tab">
       <section className="tool-panel">
-        <div className="panel-title-row">
-          <div>
-            <h2>Slides</h2>
-            <p>Control what students and the projected screen see.</p>
-          </div>
-          <button className="button primary" onClick={openPresentationView}>Open Presentation View</button>
-        </div>
-
         <div className="control-grid">
-          <label>
-            Upload PDF
-            <input type="file" accept="application/pdf" onChange={uploadPdf} />
+          <label className="button secondary file-button">
+            Upload PDF/PPTX
+            <input type="file" accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,.pptx" onChange={uploadPresentation} />
           </label>
-          <label>
-            Jump to slide
-            <select value={currentIndex} onChange={(event) => onControl('slide:set', { index: Number(event.target.value) })}>
-              {slides.map((slide, index) => (
-                <option key={slide.id} value={index}>{index + 1}. {slide.title}</option>
-              ))}
-            </select>
-          </label>
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={roomState.animationOverlay !== false}
-              onChange={(event) => onControl('animation:toggle', { enabled: event.target.checked })}
-            />
-            Show animation overlay
+          <label className="control-only">
+            {roomState.pdf?.type === 'pptx' && uploadedSlides?.length ? (
+              <select aria-label="Jump to slide" value={currentIndex} onChange={(event) => onControl('slide:set', { index: Number(event.target.value) })}>
+                {uploadedSlides.map((slide, index) => (
+                  <option key={slide.id} value={index}>{index + 1}. {slide.title || `Slide ${index + 1}`}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                aria-label="Jump to slide"
+                type="number"
+                min="1"
+                value={roomState.pdf ? currentIndex + 1 : ''}
+                placeholder="No slides uploaded"
+                onChange={(event) => onControl('slide:set', { index: Math.max(0, Number(event.target.value) - 1) })}
+                disabled={!roomState.pdf}
+              />
+            )}
           </label>
         </div>
 
         <div className="button-row slide-buttons">
           <button className="button secondary" onClick={() => onControl('slide:previous')}>Previous Slide</button>
           <button className="button secondary" onClick={() => onControl('slide:next')}>Next Slide</button>
-          <button className="button secondary" onClick={() => onControl('animation:trigger', { type: currentSlide?.animationType })}>
-            Trigger Animation
-          </button>
           <button className="button primary" onClick={() => onControl('slide:send')}>Send to Student Screens</button>
         </div>
       </section>
@@ -192,10 +179,34 @@ function SlidesTab({ slides, currentSlide, currentIndex, roomState, lessonData, 
       <LessonViewer
         lessonData={lessonData}
         slideIndex={currentIndex}
-        animation={roomState.animationOverlay !== false ? roomState.animation : { type: null, nonce: 0 }}
       />
     </div>
   );
+}
+
+async function extractPptxSlides(file) {
+  const zip = await JSZip.loadAsync(await file.arrayBuffer());
+  const slidePaths = Object.keys(zip.files)
+    .filter((path) => /^ppt\/slides\/slide\d+\.xml$/.test(path))
+    .sort((a, b) => Number(a.match(/slide(\d+)\.xml/)?.[1] || 0) - Number(b.match(/slide(\d+)\.xml/)?.[1] || 0));
+
+  const parser = new DOMParser();
+  const slides = [];
+  for (const [index, path] of slidePaths.entries()) {
+    const xml = await zip.files[path].async('text');
+    const doc = parser.parseFromString(xml, 'application/xml');
+    const text = [...doc.getElementsByTagName('a:t')]
+      .map((node) => node.textContent?.trim())
+      .filter(Boolean);
+    const uniqueLines = text.filter((line, lineIndex) => text.indexOf(line) === lineIndex);
+    slides.push({
+      id: `pptx-slide-${index + 1}`,
+      title: uniqueLines[0] || `Slide ${index + 1}`,
+      lines: uniqueLines.slice(1)
+    });
+  }
+
+  return slides.length ? slides : [{ id: 'pptx-slide-1', title: file.name, lines: ['No readable slide text found.'] }];
 }
 
 function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, onControl }) {
@@ -203,10 +214,6 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
     <div className="questions-tab">
       <section className="tool-panel">
         <div className="panel-title-row">
-          <div>
-            <h2>Questions</h2>
-            <p>Send one question at a time to student screens.</p>
-          </div>
           <button className="button secondary" onClick={() => onControl('question:clear')}>Clear Question</button>
         </div>
 
@@ -228,7 +235,6 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
       </section>
 
       <section className="tool-panel">
-        <h2>Current question</h2>
         <QuestionCard
           question={activeQuestion}
           revealAnswers={roomState.revealAnswers}
@@ -279,52 +285,21 @@ function ResponseSummary({ question, responses, showResults }) {
   );
 }
 
-function StudentsTab({ students, activeResponses, accuracy, charges }) {
-  return (
-    <section className="tool-panel">
-      <div className="panel-title-row">
-        <div>
-          <h2>Students</h2>
-          <p>Connected students and current-question status.</p>
-        </div>
-        <div className="results-grid compact">
-          <div className="metric-card"><strong>{students.length}</strong><span>students</span></div>
-          <div className="metric-card"><strong>{accuracy}%</strong><span>accuracy</span></div>
-          <div className="metric-card"><strong>{charges}</strong><span>charges</span></div>
-        </div>
-      </div>
-      <div className="student-table">
-        {students.length === 0 ? <p className="muted">Waiting for students to join.</p> : students.map((student) => {
-          const response = activeResponses.find((item) => item.studentId === student.id);
-          return (
-            <div className="student-table-row" key={student.id}>
-              <span className={`status-dot ${student.connected ? 'online' : ''}`} />
-              <strong>{student.name}</strong>
-              <span>{student.score} pts</span>
-              <span>{response ? 'Answered' : 'Not answered'}</span>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
 function GameTab({ lessonData, roomState, activeQuestion, activeResponses, onControl }) {
-  if (roomState.game?.bossHealth === 0) {
+  if (roomState.game?.status === 'ended') {
     return <ResultsScreen lessonData={lessonData} roomState={roomState} />;
   }
 
+  const players = Object.values(roomState.game?.players || {});
+  const classEnergy = players.reduce((sum, player) => sum + (player.energy || 0), 0);
+  const classDamage = players.reduce((sum, player) => sum + (player.contribution || 0), 0);
+
   return (
     <div className="game-tab">
-      <section className="tool-panel game-start-panel">
-        <div>
-          <h2>Game</h2>
-          <p>Start the final cooperative review game when the lesson is done.</p>
-        </div>
-        <label>
-          Scenario
+      <section className="tool-panel presenter-game-controls">
+        <label className="control-only">
           <select
+            aria-label="Scenario"
             value={roomState.game?.scenarioId || 'localized-solid'}
             onChange={(event) => onControl('game:scenario', { scenarioId: event.target.value })}
           >
@@ -333,9 +308,16 @@ function GameTab({ lessonData, roomState, activeQuestion, activeResponses, onCon
             ))}
           </select>
         </label>
-        <button className="button primary game-time-button" onClick={() => onControl('game:start', { scenarioId: roomState.game?.scenarioId || 'localized-solid' })}>
-          GAME TIME!
-        </button>
+        <button className="button primary game-time-button" onClick={() => onControl('game:start', { scenarioId: roomState.game?.scenarioId || 'localized-solid' })}>Start Game</button>
+        <button className="button secondary" onClick={() => onControl('game:pause')}>Pause Game</button>
+        <button className="button secondary" onClick={() => onControl('game:reset')}>Reset Game</button>
+        <button className="button secondary" onClick={() => onControl('game:spawnCell')}>Spawn Cancer Cell</button>
+        <button className="button secondary" onClick={() => onControl('game:mutation')}>Trigger Mutation Event</button>
+        <button className="button secondary" onClick={() => onControl('game:energyQuestion')}>Send Energy Question</button>
+        <div className="class-game-stats">
+          <strong>{classEnergy}</strong><span>Class Energy</span>
+          <strong>{classDamage}</strong><span>Damage</span>
+        </div>
       </section>
 
       <GameArena

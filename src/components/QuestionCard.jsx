@@ -31,10 +31,6 @@ export default function QuestionCard({ question, revealAnswers, responses = [], 
 
   return (
     <section className={`question-card ${mode}`}>
-      <div className="question-meta">
-        <span className="badge">{question.concept}</span>
-        <span>{question.type === 'short' ? 'Short answer' : 'Multiple choice'}</span>
-      </div>
       <h3>{question.prompt}</h3>
 
       {question.type === 'short' ? (
@@ -74,7 +70,7 @@ export default function QuestionCard({ question, revealAnswers, responses = [], 
         </div>
       )}
 
-      {revealAnswers && (
+      {mode === 'presenter' && revealAnswers && (
         <div className="answer-explanation">
           <strong>Explanation:</strong> {question.explanation}
         </div>

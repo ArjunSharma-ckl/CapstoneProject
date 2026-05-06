@@ -12,8 +12,8 @@ export const defaultLessonData = {
   treatments,
   scenarios,
   gameSettings: {
-    title: 'Treatment Team: Defeat the Cancer',
-    bossHealth: 100,
+    title: 'Treatment Team: Cell Battle',
+    bossHealth: 1000,
     roundsLimit: 8,
     fastAnswerMs: 8000,
     comboEvery: 5,
