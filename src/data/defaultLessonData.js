@@ -4,9 +4,8 @@ import { treatments, scenarios } from './treatments.js';
 
 export const defaultLessonData = {
   version: 1,
-  title: 'Cancer Treatments Interactive Lesson',
+  title: 'CapstonProjectA4',
   roomCode: '',
-  footerDisclaimer: 'Educational project only — not medical advice.',
   slides,
   questions,
   treatments,

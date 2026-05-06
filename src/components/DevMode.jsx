@@ -147,8 +147,8 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
       <div className="modal-backdrop">
         <form className="password-modal" onSubmit={unlock}>
           <button type="button" className="modal-close" onClick={onClose}>x</button>
-          <div className="eyebrow">Hidden dev mode</div>
-          <h2>Admin editor</h2>
+          <div className="eyebrow">Locked editor</div>
+          <h2>Content editor</h2>
           <p>Enter the classroom editing password.</p>
           <input
             type="password"
@@ -169,7 +169,7 @@ export default function DevMode({ lessonData, onSave, onReset, onClose = () => {
         <header className="dev-header">
           <div>
             <div className="eyebrow">Local content editor</div>
-            <h2>EDIT</h2>
+            <h2>Edit Content</h2>
           </div>
           <div className="dev-actions">
             <button className="button primary" onClick={save}>Save changes</button>

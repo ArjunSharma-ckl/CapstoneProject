@@ -9,6 +9,7 @@ export default function StudentJoin({ defaultRoomCode, connected, joinError, onC
   function submit(event) {
     event.preventDefault();
     const displayName = cleanStudentName(name);
+    const room = String(code || '').trim().toUpperCase();
     if (!displayName) {
       setError('Enter a name before joining.');
       onClearError?.();
@@ -19,8 +20,13 @@ export default function StudentJoin({ defaultRoomCode, connected, joinError, onC
       onClearError?.();
       return;
     }
+    if (!room) {
+      setError('Enter a room code before joining.');
+      onClearError?.();
+      return;
+    }
     setError('');
-    onJoin({ name: displayName, code });
+    onJoin({ name: displayName, code: room });
   }
 
   return (
@@ -41,7 +47,15 @@ export default function StudentJoin({ defaultRoomCode, connected, joinError, onC
           />
         </label>
         <label className="control-only">
-          <input aria-label="Room code" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} placeholder="ENTER CODE HERE" />
+          <input
+            aria-label="Room code"
+            value={code}
+            onChange={(event) => setCode(event.target.value.toUpperCase())}
+            placeholder="ENTER ROOM CODE HERE"
+            maxLength={8}
+            autoComplete="off"
+            autoCapitalize="characters"
+          />
         </label>
         {(error || joinError) && <div className="form-error">{error || joinError}</div>}
         <button className="button primary large" type="submit" disabled={!connected || !code.trim() || !name.trim()}>

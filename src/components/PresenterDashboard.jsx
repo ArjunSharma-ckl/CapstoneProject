@@ -6,7 +6,7 @@ import GameArena from './GameArena.jsx';
 import ResultsScreen from './ResultsScreen.jsx';
 import DevMode from './DevMode.jsx';
 
-const TABS = ['SLIDES', 'QUESTIONS', 'STUDENTS', 'GAME', 'EDIT'];
+const TABS = ['Slides', 'Questions', 'Students', 'Game', 'Edit Content'];
 
 export default function PresenterDashboard({
   connected,
@@ -20,7 +20,7 @@ export default function PresenterDashboard({
   onSaveLessonData,
   onResetLessonData
 }) {
-  const [activeTab, setActiveTab] = useState('SLIDES');
+  const [activeTab, setActiveTab] = useState('Slides');
 
   const uploadedSlides = roomState?.pdf?.type === 'pptx' ? roomState.pdf.slides : [];
   const currentIndex = roomState?.slideIndex || 0;
@@ -90,7 +90,7 @@ export default function PresenterDashboard({
       </nav>
 
       <section className="tab-panel">
-        {activeTab === 'SLIDES' && (
+        {activeTab === 'Slides' && (
           <SlidesTab
             uploadedSlides={uploadedSlides}
             currentIndex={currentIndex}
@@ -100,7 +100,7 @@ export default function PresenterDashboard({
           />
         )}
 
-        {activeTab === 'QUESTIONS' && (
+        {activeTab === 'Questions' && (
           <QuestionsTab
             questions={lessonData.questions}
             activeQuestion={activeQuestion}
@@ -110,7 +110,7 @@ export default function PresenterDashboard({
           />
         )}
 
-        {activeTab === 'STUDENTS' && (
+        {activeTab === 'Students' && (
           <StudentsTab
             students={roomState.students || []}
             gamePlayers={roomState.game?.players || {}}
@@ -119,7 +119,7 @@ export default function PresenterDashboard({
           />
         )}
 
-        {activeTab === 'GAME' && (
+        {activeTab === 'Game' && (
           <GameTab
             lessonData={lessonData}
             roomState={roomState}
@@ -129,7 +129,7 @@ export default function PresenterDashboard({
           />
         )}
 
-        {activeTab === 'EDIT' && (
+        {activeTab === 'Edit Content' && (
           <DevMode
             lessonData={lessonData}
             onSave={onSaveLessonData}
