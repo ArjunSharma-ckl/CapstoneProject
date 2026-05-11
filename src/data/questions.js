@@ -145,7 +145,7 @@ export const questions = [
     concept: 'Cancer staging',
     prompt: 'What does cancer staging help doctors decide?',
     choices: [
-      { id: 'a', text: 'Which hospital room color scheme to use.' },
+      { id: 'a', text: 'Which poster color scheme to use.' },
       { id: 'b', text: 'How far cancer has spread and what treatment is appropriate.' },
       { id: 'c', text: 'Which drug to purchase first.' },
       { id: 'd', text: 'Whether to always use surgery.' }

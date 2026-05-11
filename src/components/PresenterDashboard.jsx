@@ -2,11 +2,10 @@ import { useState } from 'react';
 import JSZip from 'jszip';
 import LessonViewer from './LessonViewer.jsx';
 import QuestionCard from './QuestionCard.jsx';
-import GameArena from './GameArena.jsx';
-import ResultsScreen from './ResultsScreen.jsx';
+import ResponseGraph from './ResponseGraph.jsx';
 import DevMode from './DevMode.jsx';
 
-const TABS = ['Slides', 'Questions', 'Students', 'Game', 'Edit Content'];
+const TABS = ['Slides', 'Questions', 'Students', 'Edit Content'];
 
 export default function PresenterDashboard({
   connected,
@@ -24,11 +23,7 @@ export default function PresenterDashboard({
 
   const uploadedSlides = roomState?.pdf?.type === 'pptx' ? roomState.pdf.slides : [];
   const currentIndex = roomState?.slideIndex || 0;
-  const activeQuestion =
-    lessonData.questions.find((q) => q.id === roomState?.activeQuestionId) ||
-    (roomState?.game?.currentQuestion?.id === roomState?.activeQuestionId
-      ? roomState?.game?.currentQuestion
-      : null);
+  const activeQuestion = lessonData.questions.find((q) => q.id === roomState?.activeQuestionId);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
   const projectedData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : { ...lessonData, pdf: null };
 
@@ -62,7 +57,7 @@ export default function PresenterDashboard({
       <header className="dashboard-header">
         <div className="dashboard-room-label">
           Room: <strong>{roomState.roomCode}</strong>
-          {' '}&mdash;{' '}
+          {' - '}
           <span className={`conn-dot ${connected ? 'online' : ''}`} />
           {connected ? 'Live' : 'Disconnected'}
         </div>
@@ -71,7 +66,7 @@ export default function PresenterDashboard({
             className="button secondary"
             onClick={() => onControl('session:reset')}
             disabled={!connected}
-            title="Resets slides, questions, scores, and game (keeps students in the room)."
+            title="Resets slides, questions, and scores (keeps students in the room)."
           >
             Reset Room
           </button>
@@ -121,17 +116,6 @@ export default function PresenterDashboard({
         {activeTab === 'Students' && (
           <StudentsTab
             students={roomState.students || []}
-            gamePlayers={roomState.game?.players || {}}
-            activeQuestion={activeQuestion}
-            activeResponses={activeResponses}
-            onControl={onControl}
-          />
-        )}
-
-        {activeTab === 'Game' && (
-          <GameTab
-            lessonData={lessonData}
-            roomState={roomState}
             activeQuestion={activeQuestion}
             activeResponses={activeResponses}
             onControl={onControl}
@@ -157,7 +141,6 @@ function openPresentationView(roomCode) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-/* ── SLIDES TAB ──────────────────────────────────────────────────── */
 function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onControl }) {
   async function uploadPresentation(event) {
     const file = event.target.files?.[0];
@@ -180,7 +163,7 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
     : roomState?.pdf?.pageCount || lessonData?.slides?.length || 0;
 
   return (
-    <div className="slides-tab">
+    <div className={`slides-tab ${roomState?.pdf?.type === 'pdf' ? 'pdf-active' : ''}`}>
       <section className="tool-panel">
         <div className="button-row tight">
           <button className="button secondary" onClick={() => onControl('slide:set', { index: 0 })}>
@@ -219,7 +202,7 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
                 min="1"
                 max={totalSlides || undefined}
                 value={totalSlides ? currentIndex + 1 : ''}
-                placeholder={totalSlides ? `1–${totalSlides}` : 'Slide number'}
+                placeholder={totalSlides ? `1-${totalSlides}` : 'Slide number'}
                 onChange={(e) => onControl('slide:set', { index: Math.max(0, Number(e.target.value) - 1) })}
               />
             )}
@@ -271,7 +254,6 @@ async function extractPptxSlides(file) {
     : [{ id: 'pptx-slide-1', title: file.name, lines: ['No readable slide text found.'] }];
 }
 
-/* ── QUESTIONS TAB ───────────────────────────────────────────────── */
 function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, onControl }) {
   return (
     <div className="questions-tab">
@@ -295,8 +277,8 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
               </div>
               <div className="question-actions">
                 <button className="button primary" onClick={() => onControl('question:launch', { questionId: question.id })}>Send Question</button>
-                <button className="button secondary" onClick={() => onControl('question:reveal')}>Reveal Answer</button>
-                <button className="button secondary" onClick={() => onControl('question:results')}>Show Results</button>
+                <button className="button secondary" onClick={() => onControl('question:reveal')} disabled={activeQuestion?.id !== question.id}>Reveal Answer</button>
+                <button className="button secondary" onClick={() => onControl('question:results')} disabled={activeQuestion?.id !== question.id}>Show Results</button>
               </div>
             </article>
           ))}
@@ -316,6 +298,9 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
           showResults={roomState.showResults}
         />
         {roomState.showResults && activeQuestion && (
+          <ResponseGraph question={activeQuestion} responses={activeResponses} />
+        )}
+        {roomState.showResults && activeQuestion && (
           <button className="button primary" onClick={() => onControl('question:returnToSlide')}>
             Go Back to Slide
           </button>
@@ -330,10 +315,6 @@ function ResponseSummary({ question, responses, showResults }) {
   const total = responses.length;
   const correct = responses.filter((r) => r.correct).length;
   const accuracy = total ? Math.round((correct / total) * 100) : 0;
-  const distribution = question.choices?.map((choice) => ({
-    ...choice,
-    count: responses.filter((r) => r.answerId === choice.id).length
-  })) || [];
 
   return (
     <div className="response-summary">
@@ -341,16 +322,6 @@ function ResponseSummary({ question, responses, showResults }) {
         <div className="metric-card"><strong>{total}</strong><span>answered</span></div>
         <div className="metric-card"><strong>{accuracy}%</strong><span>accuracy</span></div>
       </div>
-      {(showResults || responses.length > 0) && distribution.length > 0 && (
-        <div className="distribution-list">
-          {distribution.map((choice) => (
-            <div className="distribution-row" key={choice.id}>
-              <span>{choice.id.toUpperCase()}. {choice.text}</span>
-              <strong>{choice.count}</strong>
-            </div>
-          ))}
-        </div>
-      )}
       {responses.map((r) => (
         <div className="response-row" key={r.studentId}>
           <span>{r.studentName}</span>
@@ -363,8 +334,7 @@ function ResponseSummary({ question, responses, showResults }) {
   );
 }
 
-/* ── STUDENTS TAB ────────────────────────────────────────────────── */
-function StudentsTab({ students, gamePlayers, activeQuestion, activeResponses }) {
+function StudentsTab({ students, activeQuestion, activeResponses, onControl }) {
   const answeredIds = new Set(activeResponses.map((r) => r.studentId));
 
   if (!students.length) {
@@ -381,7 +351,7 @@ function StudentsTab({ students, gamePlayers, activeQuestion, activeResponses })
     <div className="students-tab">
       <section className="tool-panel">
         <div className="button-row tight">
-          <button className="button secondary" onClick={() => onControl?.('session:reset')}>
+          <button className="button secondary" onClick={() => onControl('session:reset')}>
             Reset Room
           </button>
         </div>
@@ -391,110 +361,34 @@ function StudentsTab({ students, gamePlayers, activeQuestion, activeResponses })
               <th>Name</th>
               <th>Status</th>
               <th>Score</th>
-              <th>Energy</th>
-              <th>HP</th>
-              <th>Damage</th>
               {activeQuestion && <th>Answered</th>}
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {students.map((student) => {
-              const player = gamePlayers[student.id];
-              return (
-                <tr key={student.id} className={student.connected ? '' : 'disconnected-row'}>
-                  <td>{student.name}</td>
-                  <td>{student.connected ? 'Connected' : 'Disconnected'}</td>
-                  <td>{student.score ?? 0}</td>
-                  <td>{player?.energy ?? 0}</td>
-                  <td>{player?.health ?? (player?.maxHealth ?? 100)}</td>
-                  <td>{player?.contribution ?? 0}</td>
-                  {activeQuestion && (
-                    <td className={answeredIds.has(student.id) ? 'correct-text' : 'muted'}>
-                      {answeredIds.has(student.id) ? 'Yes' : 'Waiting'}
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
+            {students.map((student) => (
+              <tr key={student.id} className={student.connected ? '' : 'disconnected-row'}>
+                <td>{student.name}</td>
+                <td>{student.connected ? 'Connected' : 'Disconnected'}</td>
+                <td>{student.score ?? 0}</td>
+                {activeQuestion && (
+                  <td className={answeredIds.has(student.id) ? 'correct-text' : 'muted'}>
+                    {answeredIds.has(student.id) ? 'Yes' : 'Waiting'}
+                  </td>
+                )}
+                <td>
+                  <button
+                    className="button ghost compact-button"
+                    onClick={() => onControl('student:remove', { studentId: student.id })}
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </section>
-    </div>
-  );
-}
-
-/* ── GAME TAB ────────────────────────────────────────────────────── */
-function GameTab({ lessonData, roomState, activeQuestion, activeResponses, onControl }) {
-  const [scenarioId, setScenarioId] = useState('localized-solid');
-
-  if (roomState.game?.status === 'ended') {
-    return <ResultsScreen lessonData={lessonData} roomState={roomState} />;
-  }
-
-  const players = Object.values(roomState.game?.players || {});
-  const classEnergy = players.reduce((sum, p) => sum + (p.energy || 0), 0);
-  const classDamage = players.reduce((sum, p) => sum + (p.contribution || 0), 0);
-
-  return (
-    <div className="game-tab">
-      <section className="tool-panel presenter-game-controls">
-        <div className="button-row tight">
-          <button className="button secondary" onClick={() => onControl('session:reset')}>
-            Reset Room
-          </button>
-        </div>
-
-        <div className="game-scenario-row">
-          <label className="control-only">
-            <select
-              aria-label="Scenario"
-              value={scenarioId}
-              onChange={(e) => {
-                setScenarioId(e.target.value);
-                onControl('game:scenario', { scenarioId: e.target.value });
-              }}
-            >
-              <option value="localized-solid">Localized Solid Tumor</option>
-              <option value="leukemia">Leukemia / Blood Cancer</option>
-              <option value="metastatic">Metastatic Cancer</option>
-            </select>
-          </label>
-        </div>
-
-        <div className="button-row">
-          <button
-            className="button primary game-time-button"
-            onClick={() => onControl('game:start', { scenarioId })}
-          >
-            GAME TIME
-          </button>
-          <button className="button secondary" onClick={() => onControl('game:pause')}>
-            {roomState.game?.status === 'paused' ? 'Resume Game' : 'Pause Game'}
-          </button>
-          <button className="button secondary" onClick={() => onControl('game:reset')}>Reset Game</button>
-        </div>
-
-        <div className="button-row">
-          <button className="button secondary" onClick={() => onControl('game:mutation')}>Trigger Mutation Event</button>
-          <button className="button secondary" onClick={() => onControl('game:energyQuestion')}>Send Energy Question</button>
-          <button className="button secondary" onClick={() => onControl('game:spawnCell')}>Spawn Cancer Cell</button>
-        </div>
-
-        <div className="class-game-stats">
-          <div><strong>{classEnergy}</strong><span>Class Energy</span></div>
-          <div><strong>{classDamage}</strong><span>Total Damage</span></div>
-          <div><strong>{roomState.game?.totalHealth ?? '—'}</strong><span>Cancer HP Left</span></div>
-        </div>
-      </section>
-
-      <GameArena
-        lessonData={lessonData}
-        roomState={roomState}
-        activeQuestion={activeQuestion}
-        activeResponses={activeResponses}
-        presenter
-        onControl={onControl}
-      />
     </div>
   );
 }

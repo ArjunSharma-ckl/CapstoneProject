@@ -23,16 +23,13 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
       );
     }
 
+    const page = Math.max(1, Number(slideIndex) + 1);
     return (
-      <section className={`lesson-viewer uploaded-pdf ${compact ? 'compact' : ''}`}>
-        <div className={`pdf-fullpage ${compact ? 'compact' : ''}`}>
-          <iframe
-            title={uploaded.name || 'Uploaded presentation'}
-            src={`${uploaded.dataUrl}#page=${slideIndex + 1}&toolbar=0&navpanes=0`}
-            className="pdf-iframe"
-          />
-        </div>
-      </section>
+      <iframe
+        title={uploaded.name || 'Uploaded PDF'}
+        src={`${uploaded.dataUrl}#page=${page}&view=FitH`}
+        className="pdf-viewer"
+      />
     );
   }
 

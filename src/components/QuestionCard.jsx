@@ -1,21 +1,31 @@
 import { useEffect, useState } from 'react';
 
-// Generate a stable random order for choices based on question ID and student seed
 function getRandomizedChoices(question, studentSeed = '') {
   if (!question?.choices || question.type === 'short') return question?.choices || [];
-  
-  // Create a stable hash-based seed
-  const seed = (studentSeed + question.id).split('').reduce((acc, char) => {
-    return ((acc << 5) - acc) + char.charCodeAt(0);
-  }, 0);
-  
-  // Fisher-Yates shuffle with stable seed
+
+  let seed = (studentSeed + question.id).split('').reduce((acc, char) => {
+    return Math.imul(31, acc) + char.charCodeAt(0) | 0;
+  }, 2166136261);
   const choices = [...question.choices];
+
+  function nextRandom() {
+    seed += 0x6d2b79f5;
+    let value = seed;
+    value = Math.imul(value ^ value >>> 15, value | 1);
+    value ^= value + Math.imul(value ^ value >>> 7, value | 61);
+    return ((value ^ value >>> 14) >>> 0) / 4294967296;
+  }
+
   for (let i = choices.length - 1; i > 0; i--) {
-    const pseudoRandom = Math.sin(seed * (i + 1)) * 10000;
-    const j = Math.floor((pseudoRandom - Math.floor(pseudoRandom)) * (i + 1));
+    const j = Math.floor(nextRandom() * (i + 1));
     [choices[i], choices[j]] = [choices[j], choices[i]];
   }
+
+  const unchanged = choices.every((choice, index) => choice.id === question.choices[index]?.id);
+  if (unchanged && choices.length > 1) {
+    choices.push(choices.shift());
+  }
+
   return choices;
 }
 
@@ -24,9 +34,15 @@ export default function QuestionCard({ question, revealAnswers, responses = [], 
   const [shortText, setShortText] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [startedAt, setStartedAt] = useState(Date.now());
-  const answered = Boolean(selected || submitted);
-  
-  // Get randomized choices for this student
+
+  const studentResponse = mode === 'student'
+    ? responses.find((response) => response.studentId === studentSeed)
+    : null;
+  const selectedAnswerId = selected || studentResponse?.answerId || '';
+  const submittedShortText = shortText || studentResponse?.answerText || '';
+  const answered = Boolean(selectedAnswerId || submitted || studentResponse);
+  const responseCorrect = studentResponse?.correct ?? (selectedAnswerId && selectedAnswerId === question?.correctAnswerId);
+  const showStudentFeedback = mode === 'student' && revealAnswers && Boolean(studentResponse || selectedAnswerId);
   const displayedChoices = mode === 'student' ? getRandomizedChoices(question, studentSeed) : question?.choices || [];
 
   useEffect(() => {
@@ -58,7 +74,7 @@ export default function QuestionCard({ question, revealAnswers, responses = [], 
       {question.type === 'short' ? (
         <div className="short-answer">
           <textarea
-            value={shortText}
+            value={submittedShortText}
             onChange={(event) => setShortText(event.target.value)}
             placeholder="Type a one-sentence explanation..."
             disabled={mode !== 'student' || answered}
@@ -73,16 +89,16 @@ export default function QuestionCard({ question, revealAnswers, responses = [], 
         <div className="choice-grid">
           {displayedChoices.map((choice) => {
             const isCorrect = revealAnswers && choice.id === question.correctAnswerId;
-            const isWrongSelected = revealAnswers && selected === choice.id && choice.id !== question.correctAnswerId;
+            const isWrongSelected = revealAnswers && selectedAnswerId === choice.id && choice.id !== question.correctAnswerId;
             return (
               <button
                 key={choice.id}
-                className={`choice-button ${selected === choice.id ? 'selected' : ''} ${isCorrect ? 'correct' : ''} ${isWrongSelected ? 'incorrect' : ''}`}
+                className={`choice-button ${selectedAnswerId === choice.id ? 'selected' : ''} ${isCorrect ? 'correct' : ''} ${isWrongSelected ? 'incorrect' : ''}`}
                 onClick={() => {
                   setSelected(choice.id);
                   submitAnswer(choice.id);
                 }}
-                disabled={mode !== 'student' || Boolean(selected)}
+                disabled={mode !== 'student' || answered}
               >
                 <span className="choice-letter">{choice.id.toUpperCase()}</span>
                 <span>{choice.text}</span>
@@ -95,6 +111,13 @@ export default function QuestionCard({ question, revealAnswers, responses = [], 
       {mode === 'presenter' && revealAnswers && (
         <div className="answer-explanation">
           <strong>Explanation:</strong> {question.explanation}
+        </div>
+      )}
+
+      {showStudentFeedback && (
+        <div className={`answer-feedback ${responseCorrect ? 'correct' : 'incorrect'}`}>
+          <strong>{responseCorrect ? 'Correct' : 'Incorrect'}</strong>
+          <p>{question.explanation}</p>
         </div>
       )}
 

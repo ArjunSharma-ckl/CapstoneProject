@@ -1,9 +1,19 @@
 import LessonViewer from './LessonViewer.jsx';
-import GameArena from './GameArena.jsx';
-import ResultsScreen from './ResultsScreen.jsx';
+import QuestionCard from './QuestionCard.jsx';
+import ResponseGraph from './ResponseGraph.jsx';
 
 export default function PresentationView({ roomCode, roomState, lessonData, socket }) {
   const projectedData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : lessonData;
+  const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId);
+  const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
+
+  function returnToSlides() {
+    socket?.emit('presenter:control', {
+      roomCode,
+      action: 'question:returnToSlide',
+      payload: {}
+    });
+  }
 
   if (!roomState) {
     return (
@@ -14,23 +24,21 @@ export default function PresentationView({ roomCode, roomState, lessonData, sock
     );
   }
 
-  if (roomState.game?.bossHealth === 0) {
+  if (activeQuestion) {
     return (
-      <main className="projection-view">
-        <ResultsScreen lessonData={lessonData} roomState={roomState} />
-      </main>
-    );
-  }
-
-  if (roomState.game?.active) {
-    return (
-      <main className="projection-view">
-        <GameArena
-          lessonData={lessonData}
-          roomState={roomState}
-          presenter
-          readOnly
+      <main className="projection-view projection-question-screen">
+        <div className="projection-header">
+          <button className="button ghost" onClick={returnToSlides}>Back to Slides</button>
+        </div>
+        <QuestionCard
+          question={activeQuestion}
+          revealAnswers={roomState.revealAnswers}
+          responses={activeResponses}
+          mode="presenter"
         />
+        {roomState.showResults && (
+          <ResponseGraph question={activeQuestion} responses={activeResponses} />
+        )}
       </main>
     );
   }

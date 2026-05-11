@@ -5,7 +5,6 @@ import LandingPage from './components/LandingPage.jsx';
 import StudentJoin from './components/StudentJoin.jsx';
 import PresenterDashboard from './components/PresenterDashboard.jsx';
 import StudentView from './components/StudentView.jsx';
-import DevMode from './components/DevMode.jsx';
 import PasswordGate from './components/PasswordGate.jsx';
 import PresentationView from './components/PresentationView.jsx';
 
@@ -31,7 +30,6 @@ export default function App() {
   const [studentId, setStudentId] = useState('');
   const [roomState, setRoomState] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [devOpen, setDevOpen] = useState(false);
   const [joinError, setJoinError] = useState('');
 
   useEffect(() => {
@@ -174,14 +172,6 @@ export default function App() {
         />
       )}
 
-      {devOpen && (
-        <DevMode
-          lessonData={lessonData}
-          onSave={saveLessonData}
-          onReset={resetLessonData}
-          onClose={() => setDevOpen(false)}
-        />
-      )}
     </div>
   );
 }

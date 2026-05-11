@@ -1,11 +1,8 @@
 import LessonViewer from './LessonViewer.jsx';
 import QuestionCard from './QuestionCard.jsx';
-import GameArena from './GameArena.jsx';
-import ResultsScreen from './ResultsScreen.jsx';
 
 export default function StudentView({ roomCode, roomState, lessonData, socket, studentId }) {
-  const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId)
-    || (roomState?.game?.currentQuestion?.id === roomState?.activeQuestionId ? roomState?.game?.currentQuestion : null);
+  const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
   const studentLessonData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : lessonData;
 
@@ -22,30 +19,6 @@ export default function StudentView({ roomCode, roomState, lessonData, socket, s
         <section className="lesson-viewer no-slides">
           <h2>Waiting for presenter</h2>
         </section>
-      </main>
-    );
-  }
-
-  if (roomState.game?.bossHealth === 0) {
-    return (
-      <main className="student-fullscreen student-results-screen">
-        <ResultsScreen lessonData={lessonData} roomState={roomState} />
-      </main>
-    );
-  }
-
-  if (roomState.game?.active) {
-    return (
-      <main className="student-fullscreen student-game-screen">
-        <GameArena
-          lessonData={lessonData}
-          roomState={roomState}
-          activeQuestion={activeQuestion}
-          activeResponses={activeResponses}
-          onAnswer={answer}
-          socket={socket}
-          roomCode={roomCode}
-        />
       </main>
     );
   }
