@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LessonViewer from './LessonViewer.jsx';
 import QuestionCard from './QuestionCard.jsx';
 import ResponseGraph from './ResponseGraph.jsx';
@@ -19,11 +19,24 @@ export default function PresenterDashboard({
   onResetLessonData
 }) {
   const [activeTab, setActiveTab] = useState('Slides');
+  const prevQuestionIdRef = useRef(null);
 
   const currentIndex = roomState?.slideIndex || 0;
   const activeQuestion = lessonData.questions.find((q) => q.id === roomState?.activeQuestionId);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
   const projectedData = roomState?.pdf ? { ...lessonData, pdf: roomState.pdf } : { ...lessonData, pdf: null };
+
+  useEffect(() => {
+    if (!roomState) {
+      prevQuestionIdRef.current = null;
+      return;
+    }
+    const id = roomState.activeQuestionId ?? null;
+    const prev = prevQuestionIdRef.current;
+    if (id && id !== prev) setActiveTab('Questions');
+    if (!id && prev) setActiveTab('Slides');
+    prevQuestionIdRef.current = id;
+  }, [roomState]);
 
   if (!roomState) {
     return (
