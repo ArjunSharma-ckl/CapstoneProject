@@ -28,6 +28,7 @@ export default function App() {
   const [lessonData, setLessonData] = useState(readLessonData);
   const [roomCode, setRoomCode] = useState(presentationRoom || '');
   const [studentName, setStudentName] = useState('');
+  const [studentId, setStudentId] = useState('');
   const [roomState, setRoomState] = useState(null);
   const [connected, setConnected] = useState(false);
   const [devOpen, setDevOpen] = useState(false);
@@ -36,7 +37,10 @@ export default function App() {
   useEffect(() => {
     const socket = io();
     socketRef.current = socket;
-    socket.on('connect', () => setConnected(true));
+    socket.on('connect', () => {
+      setConnected(true);
+      setStudentId(socket.id);
+    });
     socket.on('disconnect', () => setConnected(false));
     socket.on('room:state', (state) => {
       setRoomState(state);
@@ -153,6 +157,7 @@ export default function App() {
           connected={connected}
           roomCode={roomCode}
           studentName={studentName}
+          studentId={studentId}
           roomState={roomState}
           lessonData={activeLessonData}
           socket={socketRef.current}

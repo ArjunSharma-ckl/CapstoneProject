@@ -3,7 +3,7 @@ import QuestionCard from './QuestionCard.jsx';
 import GameArena from './GameArena.jsx';
 import ResultsScreen from './ResultsScreen.jsx';
 
-export default function StudentView({ roomCode, roomState, lessonData, socket }) {
+export default function StudentView({ roomCode, roomState, lessonData, socket, studentId }) {
   const activeQuestion = lessonData.questions.find((question) => question.id === roomState?.activeQuestionId)
     || (roomState?.game?.currentQuestion?.id === roomState?.activeQuestionId ? roomState?.game?.currentQuestion : null);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
@@ -58,6 +58,7 @@ export default function StudentView({ roomCode, roomState, lessonData, socket })
           revealAnswers={roomState.revealAnswers}
           responses={activeResponses}
           mode="student"
+          studentSeed={studentId}
           onAnswer={answer}
         />
       </main>

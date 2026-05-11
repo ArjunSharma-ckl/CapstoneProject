@@ -315,6 +315,11 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
           responses={activeResponses}
           showResults={roomState.showResults}
         />
+        {roomState.showResults && activeQuestion && (
+          <button className="button primary" onClick={() => onControl('question:returnToSlide')}>
+            Go Back to Slide
+          </button>
+        )}
       </section>
     </div>
   );

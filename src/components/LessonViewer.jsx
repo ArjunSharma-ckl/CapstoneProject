@@ -25,10 +25,11 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
 
     return (
       <section className={`lesson-viewer uploaded-pdf ${compact ? 'compact' : ''}`}>
-        <div className="pdf-slide-frame">
+        <div className={`pdf-fullpage ${compact ? 'compact' : ''}`}>
           <iframe
             title={uploaded.name || 'Uploaded presentation'}
             src={`${uploaded.dataUrl}#page=${slideIndex + 1}&toolbar=0&navpanes=0`}
+            className="pdf-iframe"
           />
         </div>
       </section>

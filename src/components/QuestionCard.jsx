@@ -1,11 +1,33 @@
 import { useEffect, useState } from 'react';
 
-export default function QuestionCard({ question, revealAnswers, responses = [], mode = 'student', onAnswer }) {
+// Generate a stable random order for choices based on question ID and student seed
+function getRandomizedChoices(question, studentSeed = '') {
+  if (!question?.choices || question.type === 'short') return question?.choices || [];
+  
+  // Create a stable hash-based seed
+  const seed = (studentSeed + question.id).split('').reduce((acc, char) => {
+    return ((acc << 5) - acc) + char.charCodeAt(0);
+  }, 0);
+  
+  // Fisher-Yates shuffle with stable seed
+  const choices = [...question.choices];
+  for (let i = choices.length - 1; i > 0; i--) {
+    const pseudoRandom = Math.sin(seed * (i + 1)) * 10000;
+    const j = Math.floor((pseudoRandom - Math.floor(pseudoRandom)) * (i + 1));
+    [choices[i], choices[j]] = [choices[j], choices[i]];
+  }
+  return choices;
+}
+
+export default function QuestionCard({ question, revealAnswers, responses = [], mode = 'student', onAnswer, studentSeed = '' }) {
   const [selected, setSelected] = useState('');
   const [shortText, setShortText] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [startedAt, setStartedAt] = useState(Date.now());
   const answered = Boolean(selected || submitted);
+  
+  // Get randomized choices for this student
+  const displayedChoices = mode === 'student' ? getRandomizedChoices(question, studentSeed) : question?.choices || [];
 
   useEffect(() => {
     setSelected('');
@@ -49,7 +71,7 @@ export default function QuestionCard({ question, revealAnswers, responses = [], 
         </div>
       ) : (
         <div className="choice-grid">
-          {question.choices.map((choice) => {
+          {displayedChoices.map((choice) => {
             const isCorrect = revealAnswers && choice.id === question.correctAnswerId;
             const isWrongSelected = revealAnswers && selected === choice.id && choice.id !== question.correctAnswerId;
             return (
