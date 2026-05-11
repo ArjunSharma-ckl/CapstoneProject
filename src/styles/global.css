@@ -424,18 +424,13 @@ p {
   aspect-ratio: 16 / 9;
 }
 
-.pdf-viewer,
-.nutrient-pdf-viewer {
+.pdf-viewer {
   width: 100%;
   height: 100vh;
   min-height: 520px;
   border: 0;
   display: block;
   background: var(--bg);
-}
-
-.nutrient-pdf-viewer {
-  overflow: hidden;
 }
 
 .pdf-slide-frame iframe,
@@ -449,8 +444,7 @@ p {
   gap: 0;
 }
 
-.slides-tab.pdf-active .pdf-viewer,
-.slides-tab.pdf-active .nutrient-pdf-viewer {
+.slides-tab.pdf-active .pdf-viewer {
   height: calc(100vh - 230px);
 }
 
@@ -730,8 +724,7 @@ p {
   background: var(--bg);
 }
 
-.student-slide-screen .pdf-viewer,
-.student-slide-screen .nutrient-pdf-viewer {
+.student-slide-screen .pdf-viewer {
   width: 100vw;
   height: 100vh;
   min-height: 100vh;
@@ -808,8 +801,7 @@ p {
   background: var(--bg);
 }
 
-.projection-view .pdf-viewer,
-.projection-view .nutrient-pdf-viewer {
+.projection-view .pdf-viewer {
   width: 100vw;
   height: 100vh;
   min-height: 100vh;

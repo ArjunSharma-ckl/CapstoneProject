@@ -1,4 +1,4 @@
-import NutrientPdfViewer from './NutrientPdfViewer.jsx';
+import BrowserPdfViewer from './BrowserPdfViewer.jsx';
 
 export default function LessonViewer({ lessonData, slideIndex = 0, compact = false }) {
   const uploaded = lessonData.pdf || null;
@@ -27,10 +27,10 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
 
     const page = Math.max(1, Number(slideIndex) + 1);
     return (
-      <NutrientPdfViewer
+      <BrowserPdfViewer
         title={uploaded.name || 'Uploaded PDF'}
         documentUrl={uploaded.dataUrl}
-        pageIndex={page - 1}
+        page={page}
       />
     );
   }
