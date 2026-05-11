@@ -1,3 +1,5 @@
+import NutrientPdfViewer from './NutrientPdfViewer.jsx';
+
 export default function LessonViewer({ lessonData, slideIndex = 0, compact = false }) {
   const uploaded = lessonData.pdf || null;
   const slides = lessonData.slides || [];
@@ -25,10 +27,10 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
 
     const page = Math.max(1, Number(slideIndex) + 1);
     return (
-      <iframe
+      <NutrientPdfViewer
         title={uploaded.name || 'Uploaded PDF'}
-        src={`${uploaded.dataUrl}#page=${page}&view=FitH`}
-        className="pdf-viewer"
+        documentUrl={uploaded.dataUrl}
+        pageIndex={page - 1}
       />
     );
   }

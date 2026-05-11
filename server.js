@@ -230,6 +230,10 @@ io.on('connection', (socket) => {
     if (action === 'pdf:set') {
       room.pdf = payload.pdf || null;
       room.slideIndex = 0;
+      room.activeQuestionId = null;
+      room.questionStartedAt = null;
+      room.revealAnswers = false;
+      room.showResults = false;
     }
     if (action === 'slide:send') room.lessonStarted = true;
     if (action === 'question:launch') {

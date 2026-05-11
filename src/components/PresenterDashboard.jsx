@@ -279,6 +279,7 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
                 <button className="button primary" onClick={() => onControl('question:launch', { questionId: question.id })}>Send Question</button>
                 <button className="button secondary" onClick={() => onControl('question:reveal')} disabled={activeQuestion?.id !== question.id}>Reveal Answer</button>
                 <button className="button secondary" onClick={() => onControl('question:results')} disabled={activeQuestion?.id !== question.id}>Show Results</button>
+                <button className="button secondary" onClick={() => onControl('question:returnToSlide')} disabled={activeQuestion?.id !== question.id}>Go Back to Slide</button>
               </div>
             </article>
           ))}
@@ -299,11 +300,6 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
         />
         {roomState.showResults && activeQuestion && (
           <ResponseGraph question={activeQuestion} responses={activeResponses} />
-        )}
-        {roomState.showResults && activeQuestion && (
-          <button className="button primary" onClick={() => onControl('question:returnToSlide')}>
-            Go Back to Slide
-          </button>
         )}
       </section>
     </div>

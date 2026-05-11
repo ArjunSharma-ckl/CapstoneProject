@@ -182,8 +182,9 @@ p {
 
 .home-page {
   min-height: 100vh;
-  display: block;
-  padding: 1rem;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
 }
 
 .home-panel,
@@ -199,19 +200,34 @@ p {
 }
 
 .home-panel {
-  width: min(360px, 100%);
+  width: min(720px, 100%);
   padding: 0;
   border: 0;
   background: transparent;
+  gap: 1.2rem;
 }
 
 .room-code-field {
   max-width: 100%;
 }
 
+.home-panel .room-code-field input {
+  min-height: 5.6rem;
+  padding: 1.2rem 1.5rem;
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+}
+
 .home-actions {
   display: grid;
-  gap: .6rem;
+  gap: 1.2rem;
+}
+
+.home-actions .button.large {
+  min-height: 5.2rem;
+  padding: 1.5rem 2rem;
+  font-size: 2rem;
 }
 
 .presenter-dashboard {
@@ -353,7 +369,7 @@ p {
 }
 
 .slide-title {
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-size: clamp(2.4rem, 5vw, 4.8rem);
   line-height: 1.1;
   margin: .25rem 0 .5rem;
 }
@@ -391,6 +407,12 @@ p {
   gap: .75rem;
 }
 
+.pptx-slide h2 {
+  font-size: clamp(2.4rem, 5vw, 4.8rem);
+  line-height: 1.1;
+  margin: .25rem 0 .5rem;
+}
+
 .pptx-slide ul {
   margin: 0;
   padding-left: 1.5rem;
@@ -402,13 +424,18 @@ p {
   aspect-ratio: 16 / 9;
 }
 
-.pdf-viewer {
+.pdf-viewer,
+.nutrient-pdf-viewer {
   width: 100%;
   height: 100vh;
   min-height: 520px;
   border: 0;
   display: block;
   background: var(--bg);
+}
+
+.nutrient-pdf-viewer {
+  overflow: hidden;
 }
 
 .pdf-slide-frame iframe,
@@ -422,7 +449,8 @@ p {
   gap: 0;
 }
 
-.slides-tab.pdf-active .pdf-viewer {
+.slides-tab.pdf-active .pdf-viewer,
+.slides-tab.pdf-active .nutrient-pdf-viewer {
   height: calc(100vh - 230px);
 }
 
@@ -702,7 +730,8 @@ p {
   background: var(--bg);
 }
 
-.student-slide-screen .pdf-viewer {
+.student-slide-screen .pdf-viewer,
+.student-slide-screen .nutrient-pdf-viewer {
   width: 100vw;
   height: 100vh;
   min-height: 100vh;
@@ -779,7 +808,8 @@ p {
   background: var(--bg);
 }
 
-.projection-view .pdf-viewer {
+.projection-view .pdf-viewer,
+.projection-view .nutrient-pdf-viewer {
   width: 100vw;
   height: 100vh;
   min-height: 100vh;
@@ -791,6 +821,11 @@ p {
 
 .projection-view .slide-title {
   color: var(--ink);
+  font-size: clamp(4rem, 8vw, 8rem);
+}
+
+.projection-view .pptx-slide h2 {
+  font-size: clamp(4rem, 8vw, 8rem);
 }
 
 .projection-view .slide-focus {
