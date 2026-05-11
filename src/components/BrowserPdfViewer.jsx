@@ -1,4 +1,12 @@
 export default function BrowserPdfViewer({ documentUrl, title = 'Uploaded PDF', page = 1 }) {
+  if (!documentUrl) {
+    return (
+      <section className="lesson-viewer no-slides">
+        <h2>Upload the PDF again.</h2>
+      </section>
+    );
+  }
+
   const safePage = Math.max(1, Number(page) || 1);
   const separator = documentUrl?.includes('#') ? '&' : '#';
   const viewerOptions = `toolbar=1&navpanes=1&scrollbar=1&view=FitH&page=${safePage}`;

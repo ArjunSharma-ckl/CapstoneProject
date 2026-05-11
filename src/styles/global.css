@@ -402,23 +402,6 @@ p {
   color: var(--muted);
 }
 
-.pptx-slide {
-  display: grid;
-  gap: .75rem;
-}
-
-.pptx-slide h2 {
-  font-size: clamp(2.4rem, 5vw, 4.8rem);
-  line-height: 1.1;
-  margin: .25rem 0 .5rem;
-}
-
-.pptx-slide ul {
-  margin: 0;
-  padding-left: 1.5rem;
-  line-height: 1.7;
-}
-
 .pdf-slide-frame {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -813,10 +796,6 @@ p {
 
 .projection-view .slide-title {
   color: var(--ink);
-  font-size: clamp(4rem, 8vw, 8rem);
-}
-
-.projection-view .pptx-slide h2 {
   font-size: clamp(4rem, 8vw, 8rem);
 }
 

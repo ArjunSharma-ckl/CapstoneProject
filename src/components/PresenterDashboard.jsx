@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import JSZip from 'jszip';
 import LessonViewer from './LessonViewer.jsx';
 import QuestionCard from './QuestionCard.jsx';
 import ResponseGraph from './ResponseGraph.jsx';
@@ -21,7 +20,6 @@ export default function PresenterDashboard({
 }) {
   const [activeTab, setActiveTab] = useState('Slides');
 
-  const uploadedSlides = roomState?.pdf?.type === 'pptx' ? roomState.pdf.slides : [];
   const currentIndex = roomState?.slideIndex || 0;
   const activeQuestion = lessonData.questions.find((q) => q.id === roomState?.activeQuestionId);
   const activeResponses = roomState?.responses?.[roomState?.activeQuestionId] || [];
@@ -95,7 +93,7 @@ export default function PresenterDashboard({
       <section className="tab-panel">
         {activeTab === 'Slides' && (
           <SlidesTab
-            uploadedSlides={uploadedSlides}
+            roomCode={roomState.roomCode}
             currentIndex={currentIndex}
             roomState={roomState}
             lessonData={projectedData}
@@ -141,26 +139,40 @@ function openPresentationView(roomCode) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onControl }) {
+function SlidesTab({ roomCode, currentIndex, roomState, lessonData, onControl }) {
+  const [uploadError, setUploadError] = useState('');
+
   async function uploadPresentation(event) {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (file.name.toLowerCase().endsWith('.pptx')) {
-      const slides = await extractPptxSlides(file);
-      onControl('pdf:set', { pdf: { type: 'pptx', name: file.name, slides } });
+
+    setUploadError('');
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setUploadError('Upload a PDF file.');
+      event.target.value = '';
       return;
     }
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const pageCount = await countPdfPages(file);
-      onControl('pdf:set', { pdf: { type: 'pdf', name: file.name, dataUrl: reader.result, pageCount } });
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      const response = await fetch(`/api/rooms/${encodeURIComponent(roomCode)}/pdf`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/pdf',
+          'x-file-name': encodeURIComponent(file.name)
+        },
+        body: file
+      });
+
+      if (!response.ok) throw new Error('Upload failed.');
+    } catch (error) {
+      console.error(error);
+      setUploadError('PDF upload failed.');
+    } finally {
+      event.target.value = '';
+    }
   }
 
-  const totalSlides = roomState?.pdf?.type === 'pptx'
-    ? (uploadedSlides?.length || 0)
-    : roomState?.pdf?.pageCount || lessonData?.slides?.length || 0;
+  const totalSlides = roomState?.pdf?.pageCount || lessonData?.slides?.length || 0;
 
   return (
     <div className={`slides-tab ${roomState?.pdf?.type === 'pdf' ? 'pdf-active' : ''}`}>
@@ -176,38 +188,27 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
 
         <div className="control-grid">
           <label className="button secondary file-button">
-            Upload PDF / PPTX
+            Upload PDF
             <input
               type="file"
-              accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,.pptx"
+              accept="application/pdf,.pdf"
               onChange={uploadPresentation}
             />
           </label>
 
           <label className="control-only">
-            {roomState?.pdf?.type === 'pptx' && uploadedSlides?.length ? (
-              <select
-                aria-label="Jump to slide"
-                value={currentIndex}
-                onChange={(e) => onControl('slide:set', { index: Number(e.target.value) })}
-              >
-                {uploadedSlides.map((slide, i) => (
-                  <option key={slide.id} value={i}>{i + 1}. {slide.title || `Slide ${i + 1}`}</option>
-                ))}
-              </select>
-            ) : (
-              <input
-                aria-label="Jump to slide"
-                type="number"
-                min="1"
-                max={totalSlides || undefined}
-                value={totalSlides ? currentIndex + 1 : ''}
-                placeholder={totalSlides ? `1-${totalSlides}` : 'Slide number'}
-                onChange={(e) => onControl('slide:set', { index: Math.max(0, Number(e.target.value) - 1) })}
-              />
-            )}
+            <input
+              aria-label="Jump to slide"
+              type="number"
+              min="1"
+              max={totalSlides || undefined}
+              value={totalSlides ? currentIndex + 1 : ''}
+              placeholder={totalSlides ? `1-${totalSlides}` : 'Slide number'}
+              onChange={(e) => onControl('slide:set', { index: Math.max(0, Number(e.target.value) - 1) })}
+            />
           </label>
         </div>
+        {uploadError && <div className="form-error">{uploadError}</div>}
 
         <div className="button-row slide-buttons">
           <button className="button secondary" onClick={() => onControl('slide:previous')}>Previous Slide</button>
@@ -218,40 +219,6 @@ function SlidesTab({ uploadedSlides, currentIndex, roomState, lessonData, onCont
       <LessonViewer lessonData={lessonData} slideIndex={currentIndex} />
     </div>
   );
-}
-
-async function countPdfPages(file) {
-  try {
-    const buffer = await file.arrayBuffer();
-    const text = new TextDecoder('latin1').decode(buffer);
-    const matches = text.match(/\/Type\s*\/Page\b/g);
-    return Math.max(1, matches?.length || 1);
-  } catch {
-    return 1;
-  }
-}
-
-async function extractPptxSlides(file) {
-  const zip = await JSZip.loadAsync(await file.arrayBuffer());
-  const slidePaths = Object.keys(zip.files)
-    .filter((p) => /^ppt\/slides\/slide\d+\.xml$/.test(p))
-    .sort((a, b) =>
-      Number(a.match(/slide(\d+)\.xml/)?.[1] || 0) - Number(b.match(/slide(\d+)\.xml/)?.[1] || 0)
-    );
-  const parser = new DOMParser();
-  const slides = [];
-  for (const [index, p] of slidePaths.entries()) {
-    const xml = await zip.files[p].async('text');
-    const doc = parser.parseFromString(xml, 'application/xml');
-    const text = [...doc.getElementsByTagName('a:t')]
-      .map((n) => n.textContent?.trim())
-      .filter(Boolean);
-    const unique = text.filter((line, i) => text.indexOf(line) === i);
-    slides.push({ id: `pptx-slide-${index + 1}`, title: unique[0] || `Slide ${index + 1}`, lines: unique.slice(1) });
-  }
-  return slides.length
-    ? slides
-    : [{ id: 'pptx-slide-1', title: file.name, lines: ['No readable slide text found.'] }];
 }
 
 function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, onControl }) {

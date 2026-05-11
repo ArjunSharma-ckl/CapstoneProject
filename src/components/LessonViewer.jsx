@@ -4,32 +4,13 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
   const uploaded = lessonData.pdf || null;
   const slides = lessonData.slides || [];
 
-  // PDF / PPTX takes priority when uploaded
-  if (uploaded) {
-    if (uploaded.type === 'pptx') {
-      const slide = uploaded.slides?.[slideIndex] || uploaded.slides?.[0];
-      return (
-        <section className={`lesson-viewer uploaded-pptx ${compact ? 'compact' : ''}`}>
-          <div className="pptx-slide">
-            <div className="slide-kicker">Slide {slideIndex + 1} of {uploaded.slides?.length || 1}</div>
-            <h2>{slide?.title || uploaded.name}</h2>
-            {slide?.lines?.length ? (
-              <ul>
-                {slide.lines.map((line, index) => <li key={`${line}-${index}`}>{line}</li>)}
-              </ul>
-            ) : (
-              <p>No readable text found on this slide.</p>
-            )}
-          </div>
-        </section>
-      );
-    }
-
+  // Uploaded PDFs are shown with the browser's native PDF viewer.
+  if (uploaded?.type === 'pdf') {
     const page = Math.max(1, Number(slideIndex) + 1);
     return (
       <BrowserPdfViewer
         title={uploaded.name || 'Uploaded PDF'}
-        documentUrl={uploaded.dataUrl}
+        documentUrl={uploaded.url}
         page={page}
       />
     );

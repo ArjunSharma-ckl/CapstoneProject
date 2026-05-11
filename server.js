@@ -12,6 +12,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' }
 });
+const uploadDir = path.join(__dirname, '.uploads');
 
 const rooms = new Map();
 const FAST_ANSWER_MS = 8000;
@@ -94,7 +95,6 @@ function emitRoom(roomCode) {
 }
 
 function getPresentationSlideCount(room) {
-  if (room?.pdf?.type === 'pptx') return room.pdf.slides?.length || 0;
   if (room?.pdf?.type === 'pdf') return room.pdf.pageCount || 99;
   return room?.lessonData?.slides?.length || 0;
 }
@@ -137,6 +137,25 @@ function resetSession(room, keepStudents = true) {
   }
 }
 
+function countPdfPagesFromBuffer(buffer) {
+  try {
+    const text = buffer.toString('latin1');
+    const matches = text.match(/\/Type\s*\/Page\b/g);
+    return Math.max(1, matches?.length || 1);
+  } catch {
+    return 1;
+  }
+}
+
+function setRoomPdf(room, pdf) {
+  room.pdf = pdf || null;
+  room.slideIndex = 0;
+  room.activeQuestionId = null;
+  room.questionStartedAt = null;
+  room.revealAnswers = false;
+  room.showResults = false;
+}
+
 function removeStudent(room, studentId) {
   const id = String(studentId || '');
   const student = room.students.find((item) => item.id === id);
@@ -161,6 +180,48 @@ function removeStudent(room, studentId) {
 
   return true;
 }
+
+app.put('/api/rooms/:roomCode/pdf', express.raw({ type: ['application/pdf', 'application/octet-stream'], limit: '75mb' }), (req, res) => {
+  const room = createRoom(req.params.roomCode);
+  const buffer = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body || []);
+
+  if (!buffer.length) {
+    res.status(400).json({ error: 'No PDF uploaded.' });
+    return;
+  }
+
+  fs.mkdirSync(uploadDir, { recursive: true });
+  const pdfPath = path.join(uploadDir, `${room.roomCode}.pdf`);
+  fs.writeFileSync(pdfPath, buffer);
+
+  const rawName = decodeURIComponent(String(req.get('x-file-name') || 'Uploaded PDF.pdf')).replace(/[\r\n"]/g, '');
+  const pdf = {
+    type: 'pdf',
+    name: rawName,
+    url: `/api/rooms/${room.roomCode}/pdf?version=${Date.now()}`,
+    pageCount: countPdfPagesFromBuffer(buffer)
+  };
+
+  setRoomPdf(room, pdf);
+  emitRoom(room.roomCode);
+  res.json({ pdf });
+});
+
+app.get('/api/rooms/:roomCode/pdf', (req, res) => {
+  const roomCode = cleanCode(req.params.roomCode);
+  const pdfPath = path.join(uploadDir, `${roomCode}.pdf`);
+
+  if (!fs.existsSync(pdfPath)) {
+    res.status(404).send('PDF not found.');
+    return;
+  }
+
+  const room = rooms.get(roomCode);
+  const name = (room?.pdf?.name || 'Uploaded PDF.pdf').replace(/[\r\n"]/g, '');
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename="${name}"`);
+  res.sendFile(pdfPath);
+});
 
 io.on('connection', (socket) => {
   socket.on('room:create', ({ roomCode, lessonData }) => {
@@ -228,12 +289,7 @@ io.on('connection', (socket) => {
     }
     if (action === 'slide:previous') room.slideIndex = Math.max(room.slideIndex - 1, 0);
     if (action === 'pdf:set') {
-      room.pdf = payload.pdf || null;
-      room.slideIndex = 0;
-      room.activeQuestionId = null;
-      room.questionStartedAt = null;
-      room.revealAnswers = false;
-      room.showResults = false;
+      setRoomPdf(room, payload.pdf || null);
     }
     if (action === 'slide:send') room.lessonStarted = true;
     if (action === 'question:launch') {
