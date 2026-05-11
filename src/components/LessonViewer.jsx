@@ -8,11 +8,13 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
   if (uploaded?.type === 'pdf') {
     const page = Math.max(1, Number(slideIndex) + 1);
     return (
-      <BrowserPdfViewer
-        title={uploaded.name || 'Uploaded PDF'}
-        documentUrl={uploaded.url}
-        page={page}
-      />
+      <section className={`lesson-viewer uploaded-pdf ${compact ? 'compact' : ''}`}>
+        <BrowserPdfViewer
+          title={uploaded.name || 'Uploaded PDF'}
+          documentUrl={uploaded.url}
+          page={page}
+        />
+      </section>
     );
   }
 
@@ -29,7 +31,6 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
     }
     return (
       <section className={`lesson-viewer builtin-slide ${compact ? 'compact' : ''}`}>
-        <div className="slide-kicker">Slide {slideIndex + 1} of {sorted.length}</div>
         <h2 className="slide-title">{slide.title}</h2>
         {slide.focus && <div className="slide-focus">{slide.focus}</div>}
         <p className="slide-description">{slide.description}</p>
