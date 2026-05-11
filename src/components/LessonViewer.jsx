@@ -31,9 +31,11 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
     }
     return (
       <section className={`lesson-viewer builtin-slide ${compact ? 'compact' : ''}`}>
-        <h2 className="slide-title">{slide.title}</h2>
-        {slide.focus && <div className="slide-focus">{slide.focus}</div>}
-        <p className="slide-description">{slide.description}</p>
+        <div className="slide-content" key={slide.id || slideIndex}>
+          <h2 className="slide-title">{slide.title}</h2>
+          {slide.focus && <div className="slide-focus">{slide.focus}</div>}
+          <p className="slide-description">{slide.description}</p>
+        </div>
       </section>
     );
   }

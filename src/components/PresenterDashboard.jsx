@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import LessonViewer from './LessonViewer.jsx';
 import QuestionCard from './QuestionCard.jsx';
-import ResponseGraph from './ResponseGraph.jsx';
 import DevMode from './DevMode.jsx';
 
 const TABS = ['Slides', 'Questions', 'Students', 'Edit Content'];
@@ -70,7 +69,7 @@ export default function PresenterDashboard({
           Room: <strong>{roomState.roomCode}</strong>
           {' - '}
           <span className={`conn-dot ${connected ? 'online' : ''}`} />
-          {connected ? 'Live' : 'Disconnected'}
+          {connected ? 'Connected' : 'Disconnected'}
         </div>
         <div className="header-actions">
           <button
@@ -276,17 +275,13 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
         <ResponseSummary
           question={activeQuestion}
           responses={activeResponses}
-          showResults={roomState.showResults}
         />
-        {roomState.showResults && activeQuestion && (
-          <ResponseGraph question={activeQuestion} responses={activeResponses} />
-        )}
       </section>
     </div>
   );
 }
 
-function ResponseSummary({ question, responses, showResults }) {
+function ResponseSummary({ question, responses }) {
   if (!question) return <p className="muted">No question is active.</p>;
   const total = responses.length;
   const correct = responses.filter((r) => r.correct).length;
