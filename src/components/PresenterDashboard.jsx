@@ -287,7 +287,6 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
         <ResponseSummary
           question={activeQuestion}
           responses={activeResponses}
-          showResults={roomState.showResults}
         />
         {roomState.showResults && activeQuestion && (
           <ResponseGraph question={activeQuestion} responses={activeResponses} />
@@ -297,7 +296,7 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
   );
 }
 
-function ResponseSummary({ question, responses, showResults }) {
+function ResponseSummary({ question, responses }) {
   if (!question) return <p className="muted">No question is active.</p>;
   const total = responses.length;
   const correct = responses.filter((r) => r.correct).length;

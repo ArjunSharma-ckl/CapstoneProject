@@ -21,33 +21,15 @@ function cleanCode(code = '') {
   return String(code).trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
 }
 
-const blockedNameWords = [
-  'asshole', 'bastard', 'bitch', 'bullshit', 'crap', 'cunt', 'damn', 'dick',
-  'douche', 'fag', 'faggot', 'fuck', 'motherfucker', 'nigger', 'nigga',
-  'piss', 'prick', 'pussy', 'shit', 'slut', 'whore'
-];
-
-function normalizeName(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/[@]/g, 'a')
-    .replace(/[!1|]/g, 'i')
-    .replace(/[3]/g, 'e')
-    .replace(/[0]/g, 'o')
-    .replace(/[5$]/g, 's')
-    .replace(/[7]/g, 't')
-    .replace(/[^a-z]/g, '');
-}
-
 function cleanStudentName(value) {
   return String(value || '').trim().replace(/\s+/g, ' ').slice(0, 24);
 }
 
-function isAllowedStudentName(value) {
-  const name = cleanStudentName(value);
-  if (!name) return false;
-  const normalized = normalizeName(name);
-  return !blockedNameWords.some((word) => normalized.includes(word));
+function clearActiveQuestion(room) {
+  room.activeQuestionId = null;
+  room.questionStartedAt = null;
+  room.revealAnswers = false;
+  room.showResults = false;
 }
 
 function createRoom(roomCode, lessonData) {
@@ -260,11 +242,11 @@ io.on('connection', (socket) => {
     socket.data.role = 'student';
     socket.data.studentId = socket.id;
 
-    if (!isAllowedStudentName(name)) {
-      socket.emit('join:error', { message: 'Choose a classroom-appropriate name.' });
+    const displayName = cleanStudentName(name);
+    if (!displayName) {
+      socket.emit('join:error', { message: 'Enter a name before joining.' });
       return;
     }
-    const displayName = cleanStudentName(name);
     const existing = room.students.find((student) => student.id === socket.id);
     if (!existing) {
       room.students.push({
@@ -296,11 +278,16 @@ io.on('connection', (socket) => {
     if (action === 'slide:set') {
       const requestedIndex = Math.max(0, Number(payload.index) || 0);
       room.slideIndex = presentationSlideCount ? Math.min(requestedIndex, presentationSlideCount - 1) : 0;
+      clearActiveQuestion(room);
     }
     if (action === 'slide:next') {
       if (presentationSlideCount) room.slideIndex = Math.min(room.slideIndex + 1, presentationSlideCount - 1);
+      clearActiveQuestion(room);
     }
-    if (action === 'slide:previous') room.slideIndex = Math.max(room.slideIndex - 1, 0);
+    if (action === 'slide:previous') {
+      room.slideIndex = Math.max(room.slideIndex - 1, 0);
+      clearActiveQuestion(room);
+    }
     if (action === 'pdf:set') {
       setRoomPdf(room, payload.pdf || null);
     }
@@ -316,17 +303,11 @@ io.on('connection', (socket) => {
     if (action === 'question:reveal') room.revealAnswers = true;
     if (action === 'question:results') room.showResults = true;
     if (action === 'question:clear') {
-      room.activeQuestionId = null;
-      room.questionStartedAt = null;
-      room.revealAnswers = false;
-      room.showResults = false;
+      clearActiveQuestion(room);
     }
     if (action === 'question:returnToSlide') {
       room.slideIndex = room.questionReturnSlideIndex || 0;
-      room.activeQuestionId = null;
-      room.questionStartedAt = null;
-      room.revealAnswers = false;
-      room.showResults = false;
+      clearActiveQuestion(room);
     }
     if (action === 'student:remove') {
       removeStudent(room, payload.studentId);

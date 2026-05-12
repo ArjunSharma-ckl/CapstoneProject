@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { cleanStudentName, hasProfanity } from '../utils/profanity.js';
+
+function cleanStudentName(value) {
+  return String(value || '').trim().replace(/\s+/g, ' ').slice(0, 24);
+}
 
 export default function StudentJoin({ defaultRoomCode, connected, joinError, onClearError, onJoin, onBack }) {
   const [name, setName] = useState('');
@@ -12,11 +15,6 @@ export default function StudentJoin({ defaultRoomCode, connected, joinError, onC
     const room = String(code || '').trim().toUpperCase();
     if (!displayName) {
       setError('Enter a name before joining.');
-      onClearError?.();
-      return;
-    }
-    if (hasProfanity(displayName)) {
-      setError('Choose a classroom-appropriate name.');
       onClearError?.();
       return;
     }

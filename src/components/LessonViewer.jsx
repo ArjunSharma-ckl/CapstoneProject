@@ -4,7 +4,6 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
   const uploaded = lessonData.pdf || null;
   const slides = lessonData.slides || [];
 
-  // Uploaded PDFs are shown with the browser's native PDF viewer.
   if (uploaded?.type === 'pdf') {
     const page = Math.max(1, Number(slideIndex) + 1);
     return (
@@ -18,7 +17,6 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
     );
   }
 
-  // Built-in slides
   if (slides.length > 0) {
     const sorted = [...slides].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     const slide = sorted[Math.min(slideIndex, sorted.length - 1)];
@@ -31,9 +29,11 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
     }
     return (
       <section className={`lesson-viewer builtin-slide ${compact ? 'compact' : ''}`}>
-        <h2 className="slide-title">{slide.title}</h2>
-        {slide.focus && <div className="slide-focus">{slide.focus}</div>}
-        {slide.description && <p className="slide-description">{slide.description}</p>}
+        <div className="slide-content" key={slide.id || slideIndex}>
+          <h2 className="slide-title">{slide.title}</h2>
+          {slide.focus && <div className="slide-focus">{slide.focus}</div>}
+          {slide.description && <p className="slide-description">{slide.description}</p>}
+        </div>
       </section>
     );
   }
