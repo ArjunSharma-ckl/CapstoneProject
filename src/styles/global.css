@@ -252,18 +252,6 @@ p {
   font-size: .95rem;
 }
 
-.conn-dot {
-  display: inline-block;
-  width: .6rem;
-  height: .6rem;
-  background: #aaa;
-  margin-right: .3rem;
-}
-
-.conn-dot.online {
-  background: var(--success);
-}
-
 .header-actions {
   display: flex;
   gap: .6rem;
@@ -449,6 +437,14 @@ p {
 .response-summary {
   display: grid;
   gap: .5rem;
+}
+
+.question-group-header {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: .65rem .8rem;
+  font-weight: 900;
+  color: var(--primary-dark);
 }
 
 .question-row-card {

@@ -2,185 +2,119 @@ export const questions = [
   {
     id: 'q1',
     type: 'multiple',
-    concept: 'Surgery',
-    prompt: 'Which treatment physically removes a tumor?',
+    concept: 'CAR T-cell Therapy',
+    group: 'CAR T-cell Therapy Questions',
+    prompt: 'What can enhanced T cells do?',
     choices: [
-      { id: 'a', text: 'Surgery' },
-      { id: 'b', text: 'Chemotherapy' },
-      { id: 'c', text: 'Radiation therapy' },
-      { id: 'd', text: 'Immunotherapy' }
+      { id: 'a', text: 'Produce antibodies' },
+      { id: 'b', text: 'Kill only cancer cells instead of indiscriminately' },
+      { id: 'c', text: 'Kill coronavirus cells faster' },
+      { id: 'd', text: "Recognize cancerous cell's antigens" }
     ],
-    correctAnswerId: 'a',
-    explanation: 'Surgery physically removes a localized solid tumor when it can be safely accessed and excised.'
+    correctAnswerId: 'd',
+    explanation: "Enhanced T cells can recognize cancerous cell's antigens."
   },
   {
     id: 'q2',
     type: 'multiple',
-    concept: 'Chemotherapy side effects',
-    prompt: 'Why can chemotherapy cause hair loss or nausea?',
+    concept: 'CAR T-cell Therapy',
+    group: 'CAR T-cell Therapy Questions',
+    prompt: 'What types of cancer does CAR T-cell therapy treat?',
     choices: [
-      { id: 'a', text: 'It activates T cells to attack the scalp.' },
-      { id: 'b', text: 'It damages DNA only in one targeted area.' },
-      { id: 'c', text: 'It affects healthy rapidly dividing cells too.' },
-      { id: 'd', text: 'It needs light to become active.' }
+      { id: 'a', text: 'Muscle' },
+      { id: 'b', text: 'Blood' },
+      { id: 'c', text: 'Respiratory' },
+      { id: 'd', text: 'Bone' }
     ],
-    correctAnswerId: 'c',
-    explanation: 'Chemotherapy targets rapidly dividing cells. Hair follicles, the gut lining, and bone marrow also divide rapidly, so they are damaged too, causing side effects.'
+    correctAnswerId: 'b',
+    explanation: 'CAR T-cell therapy is used for blood cancers.'
   },
   {
     id: 'q3',
     type: 'multiple',
-    concept: 'Radiation therapy',
-    prompt: 'Radiation therapy mainly damages what part of cancer cells?',
+    concept: 'Immunotherapy',
+    group: 'Immunotherapy Questions',
+    prompt: 'Which of the following is NOT a type of immunotherapy?',
     choices: [
-      { id: 'a', text: 'Cell membrane' },
-      { id: 'b', text: 'Ribosomes' },
-      { id: 'c', text: 'DNA' },
-      { id: 'd', text: 'Mitochondria' }
+      { id: 'a', text: 'T-Cell Transfer Therapy' },
+      { id: 'b', text: 'Monoclonal Antibodies' },
+      { id: 'c', text: 'Chemotherapy' },
+      { id: 'd', text: 'Immune System Modulators' }
     ],
     correctAnswerId: 'c',
-    explanation: 'Radiation uses high-energy beams to damage DNA in a targeted area, preventing cancer cells from dividing properly.'
+    explanation: 'Chemotherapy is not a type of immunotherapy.'
   },
   {
     id: 'q4',
     type: 'multiple',
     concept: 'Immunotherapy',
-    prompt: 'What does immunotherapy help the body do?',
+    group: 'Immunotherapy Questions',
+    prompt: 'True or False: Immunotherapy has been in use in some form since 1891.',
     choices: [
-      { id: 'a', text: 'Physically cut out a tumor.' },
-      { id: 'b', text: 'Recognize and attack cancer cells using the immune system.' },
-      { id: 'c', text: 'Use light to kill surface tumors.' },
-      { id: 'd', text: 'Stop all cell division in the body.' }
+      { id: 'a', text: 'True' },
+      { id: 'b', text: 'False' }
     ],
-    correctAnswerId: 'b',
-    explanation: 'Immunotherapy helps the immune system recognize or attack cancer cells that would otherwise escape immune detection by blocking checkpoint signals.'
+    correctAnswerId: 'a',
+    explanation: 'True. Immunotherapy has been in use in some form since 1891.'
   },
   {
     id: 'q5',
     type: 'multiple',
-    concept: 'CAR T-cell therapy',
-    prompt: 'What makes CAR T-cell therapy different from other treatments?',
+    concept: 'Photodynamic Therapy',
+    group: 'Photodynamic Therapy Questions',
+    prompt: 'What three things are needed for Photodynamic Therapy (PDT)?',
     choices: [
-      { id: 'a', text: "A patient's own T cells are modified to recognize cancer antigens." },
-      { id: 'b', text: 'It uses light to activate a drug near the tumor.' },
-      { id: 'c', text: 'It physically removes cancer with a scalpel.' },
-      { id: 'd', text: 'It works equally on all cancer types.' }
+      { id: 'a', text: 'Heat, oxygen, surgery' },
+      { id: 'b', text: 'Light, drug, oxygen' },
+      { id: 'c', text: 'Blood, radiation, oxygen' },
+      { id: 'd', text: 'Vaccines, light, blood' }
     ],
-    correctAnswerId: 'a',
-    explanation: "CAR T-cell therapy takes a patient's own T cells, engineers them in a lab to recognize specific cancer antigens, then infuses them back to attack the cancer."
+    correctAnswerId: 'b',
+    explanation: 'Photodynamic Therapy needs light, a drug, and oxygen.'
   },
   {
     id: 'q6',
     type: 'multiple',
-    concept: 'Photodynamic therapy',
-    prompt: 'Why is photodynamic therapy (PDT) limited for deep tumors?',
+    concept: 'Photodynamic Therapy',
+    group: 'Photodynamic Therapy Questions',
+    prompt: 'Why is PDT considered targeted?',
     choices: [
-      { id: 'a', text: 'Light does not penetrate deeply into tissue.' },
-      { id: 'b', text: 'It only works on blood cancers.' },
-      { id: 'c', text: 'It modifies T cells the wrong way.' },
-      { id: 'd', text: 'It requires surgery before it can be used.' }
+      { id: 'a', text: 'It treats the entire body' },
+      { id: 'b', text: 'It mainly treats one area' },
+      { id: 'c', text: 'It removes organs' },
+      { id: 'd', text: 'It only works on healthy cells' }
     ],
-    correctAnswerId: 'a',
-    explanation: 'PDT uses light to activate a photosensitizer drug. Because light cannot travel far through tissue, it works best on surface or near-surface tumors.'
+    correctAnswerId: 'b',
+    explanation: 'PDT is considered targeted because it mainly treats one area.'
   },
   {
     id: 'q7',
     type: 'multiple',
-    concept: 'Treatment selection',
-    prompt: 'Which treatment is least likely to be the main option for leukemia?',
+    concept: 'Radiation Therapy',
+    group: 'Radiation Therapy Questions',
+    prompt: 'What does radiation therapy mainly damage in cancer cells?',
     choices: [
-      { id: 'a', text: 'Chemotherapy' },
-      { id: 'b', text: 'CAR T-cell therapy' },
-      { id: 'c', text: 'Surgery' },
-      { id: 'd', text: 'Immunotherapy' }
+      { id: 'a', text: 'DNA' },
+      { id: 'b', text: 'Skin' },
+      { id: 'c', text: 'Blood' },
+      { id: 'd', text: 'Oxygen' }
     ],
-    correctAnswerId: 'c',
-    explanation: 'Leukemia is a blood cancer without a single solid tumor to remove. Surgery cannot cut out cancer that is spread through the blood or bone marrow.'
+    correctAnswerId: 'a',
+    explanation: 'Radiation therapy mainly damages DNA in cancer cells.'
   },
   {
     id: 'q8',
     type: 'multiple',
-    concept: 'Combination therapy',
-    prompt: 'Why might doctors combine multiple cancer treatments?',
+    concept: 'Radiation Therapy',
+    group: 'Radiation Therapy Questions',
+    prompt: 'What is one disadvantage of radiation therapy?',
     choices: [
-      { id: 'a', text: 'To increase paperwork.' },
-      { id: 'b', text: 'Because different treatments work in different ways and target different vulnerabilities.' },
-      { id: 'c', text: 'All treatments are equally effective on their own.' },
-      { id: 'd', text: 'Insurance always requires it.' }
-    ],
-    correctAnswerId: 'b',
-    explanation: 'Different treatments attack cancer in different ways. Combining them can cover more vulnerabilities and reduce the chance that resistant cells survive.'
-  },
-  {
-    id: 'q9',
-    type: 'multiple',
-    concept: 'Treatment resistance',
-    prompt: 'Why can cancer become resistant to treatment over time?',
-    choices: [
-      { id: 'a', text: 'Cancer cells are immortal and cannot die.' },
-      { id: 'b', text: 'Treatments automatically stop working after one use.' },
-      { id: 'c', text: 'Mutations allow some cancer cells to survive and pass resistance to offspring cells.' },
-      { id: 'd', text: 'Resistance only happens with radiation therapy.' }
+      { id: 'a', text: 'It cannot kill cancer cells' },
+      { id: 'b', text: 'It only works with surgery' },
+      { id: 'c', text: 'It can damage healthy cells' },
+      { id: 'd', text: 'It uses no energy waves' }
     ],
     correctAnswerId: 'c',
-    explanation: 'Cancer cells can develop mutations that help them survive a treatment. Those resistant cells multiply, making the treatment less effective over time — natural selection in action.'
-  },
-  {
-    id: 'q10',
-    type: 'multiple',
-    concept: 'Cancer diversity',
-    prompt: 'Why is there no single cure for all cancers?',
-    choices: [
-      { id: 'a', text: 'Cancer research has not started yet.' },
-      { id: 'b', text: 'All cancers have the exact same mutations.' },
-      { id: 'c', text: 'Cancer is many diseases with different mutations, tissues, stages, and resistance patterns.' },
-      { id: 'd', text: 'Only surgery can treat cancer, and it fails on every type.' }
-    ],
-    correctAnswerId: 'c',
-    explanation: 'Cancer is not one disease. Over 100 types exist, each with different tissue, mutations, stage, immune interactions, and resistance patterns. Treatment must match the specific biology.'
-  },
-  {
-    id: 'q11',
-    type: 'multiple',
-    concept: 'Cancer staging',
-    prompt: 'What does cancer staging help doctors decide?',
-    choices: [
-      { id: 'a', text: 'Which poster color scheme to use.' },
-      { id: 'b', text: 'How far cancer has spread and what treatment is appropriate.' },
-      { id: 'c', text: 'Which drug to purchase first.' },
-      { id: 'd', text: 'Whether to always use surgery.' }
-    ],
-    correctAnswerId: 'b',
-    explanation: 'Staging describes how far cancer has spread. Early-stage cancers may be treated locally; later stages may need systemic treatments. Stage guides the treatment plan.'
-  },
-  {
-    id: 'q12',
-    type: 'multiple',
-    concept: 'Local vs systemic treatment',
-    prompt: 'Which treatment targets the most specific local area rather than the whole body?',
-    choices: [
-      { id: 'a', text: 'Chemotherapy' },
-      { id: 'b', text: 'Immunotherapy' },
-      { id: 'c', text: 'Radiation therapy' },
-      { id: 'd', text: 'CAR T-cell therapy' }
-    ],
-    correctAnswerId: 'c',
-    explanation: 'Radiation is aimed precisely at a specific tumor area, making it the most locally targeted of these options. Chemotherapy and immunotherapy act throughout the body.'
-  },
-  {
-    id: 'q13',
-    type: 'short',
-    concept: 'Chemotherapy side effects',
-    prompt: 'Explain why chemotherapy can affect healthy cells.',
-    correctAnswerId: null,
-    explanation: 'Chemotherapy targets rapidly dividing cells. Healthy cells in hair follicles, the gut lining, and bone marrow also divide rapidly, so they are damaged too, causing side effects like hair loss, nausea, and low blood cell counts.'
-  },
-  {
-    id: 'q14',
-    type: 'short',
-    concept: 'Treatment selection',
-    prompt: 'Explain why cancer treatment depends on cancer type and stage.',
-    correctAnswerId: null,
-    explanation: 'Cancer is many different diseases with different mutations, tissues of origin, stages, immune interactions, and resistance patterns. A treatment effective for one cancer type may be useless or harmful for another.'
+    explanation: 'One disadvantage of radiation therapy is that it can damage healthy cells.'
   }
 ];

@@ -68,9 +68,6 @@ export default function PresenterDashboard({
       <header className="dashboard-header">
         <div className="dashboard-room-label">
           Room: <strong>{roomState.roomCode}</strong>
-          {' - '}
-          <span className={`conn-dot ${connected ? 'online' : ''}`} />
-          {connected ? 'Live' : 'Disconnected'}
         </div>
         <div className="header-actions">
           <button
@@ -235,6 +232,9 @@ function SlidesTab({ roomCode, currentIndex, roomState, lessonData, onControl })
 }
 
 function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, onControl }) {
+  let questionNumber = 0;
+  let lastGroup = '';
+
   return (
     <div className="questions-tab">
       <section className="tool-panel">
@@ -246,23 +246,34 @@ function QuestionsTab({ questions, activeQuestion, activeResponses, roomState, o
         </div>
 
         <div className="question-list">
-          {questions.map((question, index) => (
-            <article
-              className={`question-row-card ${activeQuestion?.id === question.id ? 'active' : ''}`}
-              key={question.id}
-            >
-              <div>
-                <strong>{index + 1}. {question.prompt}</strong>
-                <span className="question-concept">{question.concept}</span>
-              </div>
-              <div className="question-actions">
-                <button className="button primary" onClick={() => onControl('question:launch', { questionId: question.id })}>Send Question</button>
-                <button className="button secondary" onClick={() => onControl('question:reveal')} disabled={activeQuestion?.id !== question.id}>Reveal Answer</button>
-                <button className="button secondary" onClick={() => onControl('question:results')} disabled={activeQuestion?.id !== question.id}>Show Results</button>
-                <button className="button secondary" onClick={() => onControl('question:returnToSlide')} disabled={activeQuestion?.id !== question.id}>Go Back to Slide</button>
-              </div>
-            </article>
-          ))}
+          {questions.flatMap((question) => {
+            const rows = [];
+            const group = question.group || question.concept || 'Questions';
+            if (group !== lastGroup) {
+              rows.push(<div className="question-group-header" key={`${group}-header`}>{group}</div>);
+              lastGroup = group;
+            }
+
+            questionNumber += 1;
+            rows.push(
+              <article
+                className={`question-row-card ${activeQuestion?.id === question.id ? 'active' : ''}`}
+                key={question.id}
+              >
+                <div>
+                  <strong>{questionNumber}. {question.prompt}</strong>
+                  <span className="question-concept">{question.concept}</span>
+                </div>
+                <div className="question-actions">
+                  <button className="button primary" onClick={() => onControl('question:launch', { questionId: question.id })}>Send Question</button>
+                  <button className="button secondary" onClick={() => onControl('question:reveal')} disabled={activeQuestion?.id !== question.id}>Reveal Answer</button>
+                  <button className="button secondary" onClick={() => onControl('question:results')} disabled={activeQuestion?.id !== question.id}>Show Results</button>
+                  <button className="button secondary" onClick={() => onControl('question:returnToSlide')} disabled={activeQuestion?.id !== question.id}>Go Back to Slide</button>
+                </div>
+              </article>
+            );
+            return rows;
+          })}
         </div>
       </section>
 

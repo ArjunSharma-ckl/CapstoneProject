@@ -33,7 +33,7 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
       <section className={`lesson-viewer builtin-slide ${compact ? 'compact' : ''}`}>
         <h2 className="slide-title">{slide.title}</h2>
         {slide.focus && <div className="slide-focus">{slide.focus}</div>}
-        <p className="slide-description">{slide.description}</p>
+        {slide.description && <p className="slide-description">{slide.description}</p>}
       </section>
     );
   }
@@ -41,7 +41,7 @@ export default function LessonViewer({ lessonData, slideIndex = 0, compact = fal
   return (
     <section className={`lesson-viewer no-slides ${compact ? 'compact' : ''}`}>
       <h2>No slides loaded.</h2>
-      <p>Upload a PDF or PPTX, or add slides in the Edit tab.</p>
+      <p>Upload a PDF or add slides in the Edit tab.</p>
     </section>
   );
 }

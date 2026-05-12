@@ -116,7 +116,16 @@ function updateActiveQuestionResults(room) {
   }
 }
 
-function resetSession(room, keepStudents = true) {
+function deleteRoomPdfFile(roomCode) {
+  const pdfPath = path.join(uploadDir, `${cleanCode(roomCode)}.pdf`);
+  try {
+    if (fs.existsSync(pdfPath)) fs.unlinkSync(pdfPath);
+  } catch (error) {
+    console.error('Failed to delete uploaded PDF.', error);
+  }
+}
+
+function resetSession(room, keepStudents = true, clearPdf = false) {
   room.lessonStarted = false;
   room.slideIndex = 0;
   room.activeQuestionId = null;
@@ -128,6 +137,10 @@ function resetSession(room, keepStudents = true) {
   room.animationOverlay = true;
   room.responses = {};
   room.conceptStats = {};
+  if (clearPdf) {
+    deleteRoomPdfFile(room.roomCode);
+    room.pdf = null;
+  }
   if (keepStudents) {
     room.students.forEach((student) => {
       student.score = 0;
@@ -318,7 +331,7 @@ io.on('connection', (socket) => {
     if (action === 'student:remove') {
       removeStudent(room, payload.studentId);
     }
-    if (action === 'session:reset') resetSession(room, true);
+    if (action === 'session:reset') resetSession(room, true, true);
 
     emitRoom(room.roomCode);
   });
